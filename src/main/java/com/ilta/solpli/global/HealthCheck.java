@@ -20,6 +20,7 @@ public class HealthCheck {
   @GetMapping("/test")
   // @Operation(summary = "CI/CD API", description = "CI/CD 테스트 API")
   public String cicdTest() {
-    return "test2 : " + LocalDateTime.now();
+    LocalDateTime localDateTime = LocalDateTime.now();
+    return "test3 : " + localDateTime;
   }
 }
