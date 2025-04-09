@@ -1,6 +1,4 @@
 spring:
-  application:
-    name : Solpli
 
   # .env import
   config:
