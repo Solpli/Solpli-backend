@@ -21,6 +21,6 @@ public class HealthCheck {
   // @Operation(summary = "CI/CD API", description = "CI/CD 테스트 API")
   public String cicdTest() {
     LocalDateTime localDateTime = LocalDateTime.now();
-    return "test7 : " + localDateTime;
+    return "test8 : " + localDateTime;
   }
 }
