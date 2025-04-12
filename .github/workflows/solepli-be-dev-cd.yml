@@ -1,7 +1,7 @@
-name: ✨ Seedzip Backend DEV CD ✨
+name: ✨ Solepli Backend DEV CD ✨
 
 env:
-  DOCKER_HUB_REPOSITORY: gyuseon25/solpli
+  DOCKER_HUB_REPOSITORY: gyuseon25/solepli
 
 on:
   workflow_dispatch:
