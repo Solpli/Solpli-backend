@@ -8,6 +8,8 @@ build/
 
 # 로그 파일
 logs/
+#
+grafana-data/
 
 ### STS ###
 .apt_generated
