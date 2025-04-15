@@ -43,6 +43,11 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// Actuator 의조성
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	// Prometheus 의존성
+	implementation 'io.micrometer:micrometer-registry-prometheus'
 }
 
 // Spotless 설정 (코드 스타일 자동 정리 도구)
@@ -64,9 +69,19 @@ tasks.register('copyGitHook', Copy) {
 }
 
 // Git Hook 권한 설정 Task (chmod +x)
-tasks.register('chmodGitHook', Exec) {
-	commandLine 'chmod', '+x', '.git/hooks/pre-commit'
-	dependsOn 'copyGitHook'
+if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+	// Windows 환경에서는 권한 변경이 필요 없으므로, 단순 메시지만 출력
+	tasks.register('chmodGitHook') {
+		doLast {
+			println "Windows 환경이므로 'chmodGitHook' 태스크를 실행하지 않습니다."
+		}
+	}
+} else {
+	// Unix/Linux/macOS 환경에서는 Exec 태스크를 사용해서 chmod 실행
+	tasks.register('chmodGitHook', Exec) {
+		commandLine 'chmod', '+x', '.git/hooks/pre-commit'
+		dependsOn tasks.named('copyGitHook')
+	}
 }
 
 // Git Hook 전체 설정 Task
