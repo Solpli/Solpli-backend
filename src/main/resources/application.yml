@@ -42,3 +42,13 @@ decorator:
   datasource:
     p6spy:
       enable-logging: false
+
+# promethues
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus
+  server:
+    port: ${SECRET_PORT}
+    base-path: ${SECRET_PATH}

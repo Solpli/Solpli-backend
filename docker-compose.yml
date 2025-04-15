@@ -14,3 +14,56 @@ services:
     command: # 명령어 실행
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    #    ports:
+    #      - "9091:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - app-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    user: "$UID:$GID"
+    ports:
+      - "13000:3000"
+    volumes:
+      - ./grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      - app-network
+
+  promtail:
+    image: grafana/promtail
+    container_name: promtail
+    # promtail-config.yml를 컨테이너 안 /etc/promtail/config.yml로 복사
+    # 그리고 같은 logs-volume 볼륨을 마운트하여 /logs/*.log를 읽을 수 있게 함
+    volumes:
+      - ./logs:/logs
+      - ./promtail.yml:/etc/promtail/config.yml:ro
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    networks:
+      - app-network
+
+  loki:
+    image: grafana/loki
+    container_name: loki
+    volumes:
+      - ./loki.yml:/etc/loki/local-config.yaml:ro
+    #    ports:
+    #      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
