@@ -40,7 +40,6 @@ public class Place extends Timestamped {
   @Column(nullable = false)
   private String district;
 
-  @Column(nullable = false)
   private String neighborhood;
 
   @Column(nullable = false)
