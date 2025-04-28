@@ -14,13 +14,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import com.ilta.solepli.global.entity.Timestamped;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
 @Table(name = "users")
-public class User {
+public class User extends Timestamped {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
