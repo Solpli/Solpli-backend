@@ -24,6 +24,13 @@ spring:
         highlight_sql: true # ANSI 코드에 색을 나타냄
         use_sql_comments: true # SQL 내부에 /* */ 주석 추가
 
+  # JWT
+  jwt:
+    secret: ${JWT_SECRET}
+    access:
+      token:
+        expiration: ${JWT_EXPIRATION}
+
 # logging
 logging:
   level:
