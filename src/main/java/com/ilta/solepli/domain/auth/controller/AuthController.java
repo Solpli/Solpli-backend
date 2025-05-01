@@ -2,9 +2,12 @@ package com.ilta.solepli.domain.auth.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,7 +28,7 @@ public class AuthController {
   private final AuthService authService;
 
   @Operation(
-      summary = "기본 회원가입",
+      summary = "기본 회원가입 API",
       description = "(관리자) 아이디와 비밀번호로로 회원가입합니다. 로그인에 사용할 아이디와 비밀번호를 입력해주세요.")
   @PostMapping("/signup")
   public ResponseEntity<Void> signUp(@Valid @RequestBody BasicLoginRequest basicLoginRequest) {
@@ -35,13 +38,22 @@ public class AuthController {
   }
 
   @Operation(
-      summary = "기본 로그인",
+      summary = "기본 로그인 API",
       description = "(관리자) 아이디와 비밀번호로 로그인합니다. 로그인에 사용할 아이디와 비밀번호를 입력해주세요.")
   @PostMapping("/login")
   public ResponseEntity<LoginResponse> login(
       @Valid @RequestBody BasicLoginRequest basicLoginRequest) {
 
     LoginResponse loginResponse = authService.login(basicLoginRequest);
+    return ResponseEntity.status(HttpStatus.OK).body(loginResponse);
+  }
+
+  @Operation(summary = "소셜 로그인 API", description = "소셜 로그인을 진행합니다. (카카오, 네이버, 구글) 인가코드를 넣어주세요.")
+  @GetMapping("/login/{loginType}")
+  public ResponseEntity<LoginResponse> login(
+      @PathVariable String loginType, @RequestParam String code) {
+
+    LoginResponse loginResponse = authService.socialLogin(code, loginType);
     return ResponseEntity.status(HttpStatus.OK).body(loginResponse);
   }
 }
