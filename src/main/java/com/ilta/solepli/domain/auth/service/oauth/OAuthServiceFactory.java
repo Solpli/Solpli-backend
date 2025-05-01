@@ -23,10 +23,9 @@ public class OAuthServiceFactory {
   private LoginType getLoginType(OAuthService service) {
     if (service instanceof KakaoService) {
       return LoginType.KAKAO;
+    } else if (service instanceof NaverService) {
+      return LoginType.NAVER;
     }
-    //        else if(service instanceof NaverService) {
-    //            return LoginType.NAVER;
-    //        }
     //        else if(service instanceof GoogleService) {
     //            return LoginType.GOOGLE;
     //        }
