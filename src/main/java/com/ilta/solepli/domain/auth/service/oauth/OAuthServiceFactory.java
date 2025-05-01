@@ -25,13 +25,9 @@ public class OAuthServiceFactory {
       return LoginType.KAKAO;
     } else if (service instanceof NaverService) {
       return LoginType.NAVER;
+    } else if (service instanceof GoogleService) {
+      return LoginType.GOOGLE;
     }
-    //        else if(service instanceof GoogleService) {
-    //            return LoginType.GOOGLE;
-    //        }
-    //        else if (service instanceof BasicService) {
-    //            return LoginType.BASIC;
-    //        }
     throw new CustomException(ErrorCode.INCORRECT_LOGIN_TYPE);
   }
 
