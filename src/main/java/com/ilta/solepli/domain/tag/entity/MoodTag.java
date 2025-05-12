@@ -1,5 +1,7 @@
 package com.ilta.solepli.domain.tag.entity;
 
+import java.util.Arrays;
+
 import lombok.Getter;
 
 import com.ilta.solepli.global.exception.CustomException;
@@ -31,5 +33,9 @@ public enum MoodTag {
       }
     }
     throw new CustomException(ErrorCode.TAG_NOT_EXISTS);
+  }
+
+  public static boolean isValid(String description) {
+    return Arrays.stream(values()).anyMatch(tag -> tag.getDescription().equals(description));
   }
 }
