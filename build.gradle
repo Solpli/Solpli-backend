@@ -61,6 +61,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'io.netty:netty-resolver-dns-native-macos:4.1.86.Final:osx-aarch_64' // 맥북 (M1/M2)에서 DNS Resolver 사용하기 위해
 
+	// Amazon S3
+	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+
 }
 
 // Spotless 설정 (코드 스타일 자동 정리 도구)
