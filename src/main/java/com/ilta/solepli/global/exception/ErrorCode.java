@@ -32,7 +32,10 @@ public enum ErrorCode {
   PASSWORD_REQUIRED(HttpStatus.BAD_REQUEST, "비밀번호는 필수입니다."),
 
   // 태그 관련 에러
-  TAG_NOT_EXISTS(HttpStatus.NOT_FOUND, "존재하지 않는 태그입니다"),
+  TAG_NOT_EXISTS(HttpStatus.NOT_FOUND, "존재하지 않는 태그입니다."),
+
+  // 장소 관련 에러
+  PLACE_NOT_EXISTS(HttpStatus.NOT_FOUND, "존재하지 않는 장소입니다."),
 
   // S3 관련 에러
   EMPTY_IMAGE(HttpStatus.BAD_REQUEST, "이미지 파일이 비어있습니다."),
@@ -42,7 +45,18 @@ public enum ErrorCode {
   S3_DOWNLOAD_FAILURE(HttpStatus.INTERNAL_SERVER_ERROR, "S3 버킷에서 파일을 다운로드하는 중 에러가 발생했습니다."),
   S3_DELETE_FAILURE(HttpStatus.INTERNAL_SERVER_ERROR, "S3 버킷에서 파일을 삭제하는 중 에러가 발생했습니다."),
   MALFORMED_URL_EXCEPTION(HttpStatus.BAD_REQUEST, "잘못된 URL 형식입니다."),
-  FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "파일을 찾을 수 없습니다.");
+  FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "파일을 찾을 수 없습니다."),
+
+  // 리뷰 등록 Validation 관련
+  TOO_MANY_IMAGES(HttpStatus.BAD_REQUEST, "리뷰 사진은 최대 5장까지 가능합니다."),
+  INVALID_RECOMMENDATION(HttpStatus.BAD_REQUEST, "1인 추천 여부는 필수입니다."),
+  INVALID_RATING_NULL(HttpStatus.BAD_REQUEST, "평점은 필수입니다."),
+  INVALID_RATING_RANGE(HttpStatus.BAD_REQUEST, "평점은 1 이상 5 이하로 입력해야 합니다."),
+  EMPTY_MOOD_TAG(HttpStatus.BAD_REQUEST, "분위기 태그는 최소 1개 이상 선택해야 합니다."),
+  BLANK_MOOD_TAG_VALUE(HttpStatus.BAD_REQUEST, "분위기 태그 값은 비어 있을 수 없습니다."),
+  EMPTY_SOLO_TAG(HttpStatus.BAD_REQUEST, "1인 이용 태그는 최소 1개 이상 선택해야 합니다."),
+  BLANK_SOLO_TAG_VALUE(HttpStatus.BAD_REQUEST, "1인 이용 태그 값은 비어 있을 수 없습니다."),
+  INVALID_CONTENT_LENGTH(HttpStatus.BAD_REQUEST, "리뷰 내용은 최대 500자까지 입력할 수 있습니다.");
 
   private final HttpStatus httpStatus;
   private final String message;
