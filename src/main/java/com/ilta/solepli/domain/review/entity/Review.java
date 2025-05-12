@@ -24,6 +24,7 @@ import org.hibernate.annotations.OnDeleteAction;
 import com.ilta.solepli.domain.place.entity.Place;
 import com.ilta.solepli.domain.review.entity.mapping.ReviewImage;
 import com.ilta.solepli.domain.review.entity.mapping.ReviewTag;
+import com.ilta.solepli.domain.user.entity.User;
 
 @Entity
 @Getter
@@ -49,6 +50,11 @@ public class Review {
   @JoinColumn(name = "place_id")
   @OnDelete(action = OnDeleteAction.CASCADE)
   private Place place;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id")
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  private User user;
 
   @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<ReviewImage> reviewImages;
