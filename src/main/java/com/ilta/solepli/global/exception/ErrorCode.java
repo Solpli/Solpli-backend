@@ -31,7 +31,10 @@ public enum ErrorCode {
   LOGIN_ID_REQUIRED(HttpStatus.BAD_REQUEST, "아이디는 필수입니다."),
   PASSWORD_REQUIRED(HttpStatus.BAD_REQUEST, "비밀번호는 필수입니다."),
 
-  // S3
+  // 태그 관련 에러
+  TAG_NOT_EXISTS(HttpStatus.NOT_FOUND, "존재하지 않는 태그입니다"),
+
+  // S3 관련 에러
   EMPTY_IMAGE(HttpStatus.BAD_REQUEST, "이미지 파일이 비어있습니다."),
   UNSUPPORTED_IMAGE_FILE_EXTENSION(HttpStatus.BAD_REQUEST, "지원하지 않는 이미지 파일 확장자입니다."),
   IMAGE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "이미지 파일 크기가 너무 큽니다."),
