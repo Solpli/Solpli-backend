@@ -32,7 +32,7 @@ public class ReviewImage {
   private Long id;
 
   @Column(nullable = false)
-  private String image_url;
+  private String imageUrl;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "review_id")
