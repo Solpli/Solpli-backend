@@ -120,7 +120,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler({MaxUploadSizeExceededException.class, MultipartException.class})
   public ResponseEntity<?> handleMultipartException(Exception ex) {
 
-    log.error("handleInvalidRequestException : {}", ex.getMessage());
+    log.error("handleMultipartException : {}", ex.getMessage());
 
     String message = "파일 업로드 용량을 초과했습니다. 각 파일은 최대 10MB, 총 요청은 최대 100MB까지 허용됩니다.";
 
