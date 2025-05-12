@@ -41,7 +41,7 @@ public class Review {
   private Boolean recommendation;
 
   @Column(nullable = false)
-  private Double rating;
+  private Integer rating;
 
   private String content;
 
@@ -55,8 +55,4 @@ public class Review {
 
   @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<ReviewTag> reviewTags;
-
-  public void updateRating(Double rating) {
-    this.rating = rating;
-  }
 }
