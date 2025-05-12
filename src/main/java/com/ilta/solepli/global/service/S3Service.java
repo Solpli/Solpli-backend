@@ -31,7 +31,7 @@ public class S3Service {
   public String uploadProfileImage(MultipartFile file) {
 
     // 파일 확장자 유효성 검사
-    validateImageExtension(file.getOriginalFilename());
+    validateImageExtension(file.getContentType());
 
     // 파일명을 고유하게 지정
     String fileName = createFileName(file.getOriginalFilename());
@@ -53,7 +53,7 @@ public class S3Service {
   public String uploadReviewImage(MultipartFile file) {
 
     // 파일 확장자 유효성 검사
-    validateImageExtension(file.getOriginalFilename());
+    validateImageExtension(file.getContentType());
 
     // 파일명을 고유하게 지정
     String fileName = createFileName(file.getOriginalFilename());
@@ -97,11 +97,8 @@ public class S3Service {
     }
   }
 
-  private void validateImageExtension(String filename) {
-    String lowerCaseName = filename.toLowerCase();
-    if (!(lowerCaseName.endsWith(".jpg")
-        || lowerCaseName.endsWith(".jpeg")
-        || lowerCaseName.endsWith(".png"))) {
+  private void validateImageExtension(String contentType) {
+    if (!(contentType.equals("image/jpeg") || contentType.equals("image/png"))) {
       throw new CustomException(ErrorCode.UNSUPPORTED_IMAGE_FILE_EXTENSION);
     }
   }
