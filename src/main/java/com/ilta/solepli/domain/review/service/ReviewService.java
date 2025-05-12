@@ -53,21 +53,6 @@ public class ReviewService {
             .user(user)
             .build();
 
-    // 리뷰 이미지 저장
-    if (files.size() > 5) {
-      throw new CustomException(ErrorCode.TOO_MANY_IMAGES);
-    }
-
-    List<ReviewImage> reviewImages = new ArrayList<>();
-    for (MultipartFile file : files) {
-      if (file.getSize() > 10 * 1024 * 1024)
-        throw new CustomException(ErrorCode.IMAGE_SIZE_EXCEEDED);
-      String imageUrl = s3Service.uploadReviewImage(file);
-      ReviewImage reviewImage = ReviewImage.builder().imageUrl(imageUrl).review(review).build();
-      reviewImages.add(reviewImage);
-    }
-    review.getReviewImages().addAll(reviewImages);
-
     // 리뷰 태그 저장
     List<ReviewTag> reviewTags = new ArrayList<>();
 
@@ -87,6 +72,21 @@ public class ReviewService {
       reviewTags.add(ReviewTag.builder().name(tag).review(review).tagType(TagType.SOLO).build());
     }
     review.getReviewTags().addAll(reviewTags);
+
+    // 리뷰 이미지 저장
+    if (files.size() > 5) {
+      throw new CustomException(ErrorCode.TOO_MANY_IMAGES);
+    }
+
+    List<ReviewImage> reviewImages = new ArrayList<>();
+    for (MultipartFile file : files) {
+      if (file.getSize() > 10 * 1024 * 1024)
+        throw new CustomException(ErrorCode.IMAGE_SIZE_EXCEEDED);
+      String imageUrl = s3Service.uploadReviewImage(file);
+      ReviewImage reviewImage = ReviewImage.builder().imageUrl(imageUrl).review(review).build();
+      reviewImages.add(reviewImage);
+    }
+    review.getReviewImages().addAll(reviewImages);
 
     reviewRepository.save(review);
     reviewRepository.flush(); // 강제로 insert 쿼리 실행
