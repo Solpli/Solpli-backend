@@ -50,6 +50,7 @@ public enum ErrorCode {
   // 리뷰 등록 Validation 관련
   TOO_MANY_IMAGES(HttpStatus.BAD_REQUEST, "리뷰 사진은 최대 5장까지 가능합니다."),
   INVALID_RECOMMENDATION(HttpStatus.BAD_REQUEST, "1인 추천 여부는 필수입니다."),
+  INVALID_PLACE_ID_NULL(HttpStatus.BAD_REQUEST, "장소 ID는 필수입니다."),
   INVALID_RATING_NULL(HttpStatus.BAD_REQUEST, "평점은 필수입니다."),
   INVALID_RATING_RANGE(HttpStatus.BAD_REQUEST, "평점은 1 이상 5 이하로 입력해야 합니다."),
   EMPTY_MOOD_TAG(HttpStatus.BAD_REQUEST, "분위기 태그는 최소 1개 이상 선택해야 합니다."),

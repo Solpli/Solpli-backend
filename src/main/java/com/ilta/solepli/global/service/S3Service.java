@@ -20,61 +20,64 @@ import com.ilta.solepli.global.exception.ErrorCode;
 @RequiredArgsConstructor
 public class S3Service {
 
-  @Value("${cloud.aws.s3.profileBucket}")
-  private String profileBucketName;
+  @Value("${cloud.aws.s3.bucket}")
+  private String bucketName;
 
-  @Value("${cloud.aws.s3.reviewBucket}")
-  private String reviewBucketName;
+  @Value("${S3_PROFILE_FOLDER}")
+  private String profileFolderName;
+
+  @Value("${S3_REVIEW_FOLDER}")
+  private String reviewFolderName;
 
   private final AmazonS3 amazonS3;
 
   public String uploadProfileImage(MultipartFile file) {
 
     // 파일 확장자 유효성 검사
-    validateImageExtension(file.getContentType());
+    validateImageExtension(file);
 
     // 파일명을 고유하게 지정
-    String fileName = createFileName(file.getOriginalFilename());
+    String fileName = profileFolderName + "/" + createFileName(file.getOriginalFilename());
 
     // 메타 데이터 추출
     ObjectMetadata objectMetadata = getObjectMetaData(file);
 
     // S3에 파일 업로드
     try {
-      amazonS3.putObject(profileBucketName, fileName, file.getInputStream(), objectMetadata);
+      amazonS3.putObject(bucketName, fileName, file.getInputStream(), objectMetadata);
     } catch (IOException e) {
       throw new CustomException(ErrorCode.S3_UPLOAD_FAILURE);
     }
 
     // 업로드된 파일의 URL 반환
-    return amazonS3.getUrl(profileBucketName, fileName).toString();
+    return amazonS3.getUrl(bucketName, fileName).toString();
   }
 
   public String uploadReviewImage(MultipartFile file) {
 
     // 파일 확장자 유효성 검사
-    validateImageExtension(file.getContentType());
+    validateImageExtension(file);
 
     // 파일명을 고유하게 지정
-    String fileName = createFileName(file.getOriginalFilename());
+    String fileName = reviewFolderName + "/" + createFileName(file.getOriginalFilename());
 
     // 메타 데이터 추출
     ObjectMetadata objectMetadata = getObjectMetaData(file);
 
     // S3에 파일 업로드
     try {
-      amazonS3.putObject(reviewBucketName, fileName, file.getInputStream(), objectMetadata);
+      amazonS3.putObject(bucketName, fileName, file.getInputStream(), objectMetadata);
     } catch (IOException e) {
       throw new CustomException(ErrorCode.S3_UPLOAD_FAILURE);
     }
 
     // 업로드된 파일의 URL 반환
-    return amazonS3.getUrl(reviewBucketName, fileName).toString();
+    return amazonS3.getUrl(bucketName, fileName).toString();
   }
 
   public void deleteProfileImage(String fileUrl) {
     try {
-      amazonS3.deleteObject(profileBucketName, extractKeyFromUrl(fileUrl));
+      amazonS3.deleteObject(profileFolderName, extractKeyFromUrl(fileUrl));
     } catch (AmazonServiceException e) {
       throw new CustomException(ErrorCode.S3_DELETE_FAILURE);
     }
@@ -82,7 +85,7 @@ public class S3Service {
 
   public void deleteReviewImage(String fileUrl) {
     try {
-      amazonS3.deleteObject(reviewBucketName, extractKeyFromUrl(fileUrl));
+      amazonS3.deleteObject(reviewFolderName, extractKeyFromUrl(fileUrl));
     } catch (AmazonServiceException e) {
       throw new CustomException(ErrorCode.S3_DELETE_FAILURE);
     }
@@ -97,8 +100,9 @@ public class S3Service {
     }
   }
 
-  private void validateImageExtension(String contentType) {
-    if (!(contentType.equals("image/jpeg") || contentType.equals("image/png"))) {
+  private void validateImageExtension(MultipartFile file) {
+    String filename = file.getOriginalFilename();
+    if (filename == null || !filename.matches("(?i)^.+\\.(jpg|jpeg|png)$")) {
       throw new CustomException(ErrorCode.UNSUPPORTED_IMAGE_FILE_EXTENSION);
     }
   }
