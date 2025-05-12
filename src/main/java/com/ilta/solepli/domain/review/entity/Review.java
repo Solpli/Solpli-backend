@@ -1,5 +1,6 @@
 package com.ilta.solepli.domain.review.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
@@ -57,8 +58,10 @@ public class Review {
   private User user;
 
   @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<ReviewImage> reviewImages;
+  @Builder.Default
+  private List<ReviewImage> reviewImages = new ArrayList<>();
 
   @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<ReviewTag> reviewTags;
+  @Builder.Default
+  private List<ReviewTag> reviewTags = new ArrayList<>();
 }

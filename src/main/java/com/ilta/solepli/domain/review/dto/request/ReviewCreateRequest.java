@@ -10,7 +10,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record ReviewCreateRequest(
-    Long placeId,
+    @NotNull(message = "장소 ID는 필수입니다.") Long placeId,
     @NotNull(message = "1인 추천 여부는 필수입니다.") Boolean recommendation,
     @NotNull(message = "평점은 필수입니다.")
         @Min(value = 1, message = "평점은 1 이상이어야 합니다.")
