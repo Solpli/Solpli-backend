@@ -47,7 +47,8 @@ public enum ErrorCode {
   MALFORMED_URL_EXCEPTION(HttpStatus.BAD_REQUEST, "잘못된 URL 형식입니다."),
   FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "파일을 찾을 수 없습니다."),
 
-  // 리뷰 등록 Validation 관련
+  // 리뷰 등록 관련 에러
+  REVIEW_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "해당 장소에 이미 리뷰를 작성하셨습니다."),
   TOO_MANY_IMAGES(HttpStatus.BAD_REQUEST, "리뷰 사진은 최대 5장까지 가능합니다."),
   INVALID_RECOMMENDATION(HttpStatus.BAD_REQUEST, "1인 추천 여부는 필수입니다."),
   INVALID_PLACE_ID_NULL(HttpStatus.BAD_REQUEST, "장소 ID는 필수입니다."),

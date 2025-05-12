@@ -39,6 +39,10 @@ public class ReviewService {
             .findById(request.placeId())
             .orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_EXISTS));
 
+    if (reviewRepository.existsByUserAndPlace(user, place)) {
+      throw new CustomException(ErrorCode.REVIEW_ALREADY_EXISTS);
+    }
+
     // 리뷰 저장
     Review review =
         Review.builder()
