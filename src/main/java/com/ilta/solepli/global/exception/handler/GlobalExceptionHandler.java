@@ -8,6 +8,8 @@ import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -110,6 +112,20 @@ public class GlobalExceptionHandler {
 
     ErrorResponse response =
         ErrorResponse.create().message(ex.getMessage()).httpStatus(HttpStatus.BAD_REQUEST);
+
+    return ResponseEntity.badRequest().body(response);
+  }
+
+  /** 파일 용량 초과 (개별 파일 또는 전체 multipart 요청 크기 초과) */
+  @ExceptionHandler({MaxUploadSizeExceededException.class, MultipartException.class})
+  public ResponseEntity<?> handleMultipartException(Exception ex) {
+
+    log.error("handleMultipartException : {}", ex.getMessage());
+
+    String message = "파일 업로드 용량을 초과했습니다. 각 파일은 최대 5MB, 총 요청은 최대 100MB까지 허용됩니다.";
+
+    ErrorResponse response =
+        ErrorResponse.create().message(message).httpStatus(HttpStatus.BAD_REQUEST);
 
     return ResponseEntity.badRequest().body(response);
   }
