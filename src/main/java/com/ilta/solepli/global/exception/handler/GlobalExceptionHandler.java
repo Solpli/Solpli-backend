@@ -122,7 +122,7 @@ public class GlobalExceptionHandler {
 
     log.error("handleMultipartException : {}", ex.getMessage());
 
-    String message = "파일 업로드 용량을 초과했습니다. 각 파일은 최대 10MB, 총 요청은 최대 100MB까지 허용됩니다.";
+    String message = "파일 업로드 용량을 초과했습니다. 각 파일은 최대 5MB, 총 요청은 최대 100MB까지 허용됩니다.";
 
     ErrorResponse response =
         ErrorResponse.create().message(message).httpStatus(HttpStatus.BAD_REQUEST);
