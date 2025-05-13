@@ -24,6 +24,11 @@ spring:
         highlight_sql: true # ANSI 코드에 색을 나타냄
         use_sql_comments: true # SQL 내부에 /* */ 주석 추가
 
+  servlet:
+    multipart:
+      max-file-size: 5MB # 업로드할 수 있는 개별 파일의 최대 크기.
+      max-request-size: 100MB # multipart/form-data 요청의 최대 허용 크기.
+
   # JWT
   jwt:
     secret: ${JWT_SECRET}
@@ -62,3 +67,16 @@ management:
 
 server:
   url: ${SERVER_URL}
+
+# AWS S3
+cloud:
+  aws:
+    credentials:
+      access-key: ${S3_ACCESS_KEY}
+      secret-key: ${S3_SECRET_KEY}
+    region:
+      static: ${S3_REGION}  # 버킷의 리전
+    s3:
+      bucket: ${S3_BUCKET}
+    stack:
+      auto: false

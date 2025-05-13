@@ -54,6 +54,12 @@ public class Place extends Timestamped {
   @Column(nullable = false)
   private String types;
 
+  private Double rating;
+
   @OneToMany(mappedBy = "place", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   private List<PlaceHour> placeHours;
+
+  public void updateRating(Double rating) {
+    this.rating = rating;
+  }
 }

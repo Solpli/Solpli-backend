@@ -19,9 +19,13 @@ public class UserService {
 
   private final UserRepository userRepository;
 
-  private final String[] ADJECTIVES = {"고요한", "잔잔한", "따뜻한", "포근한", "쓸쓸한", "그리운", "낯선", "익숙한"};
+  private final String[] ADJECTIVES = {
+    "귀여운", "용감한", "날쌘", "온순한", "영리한", "수줍은", "호기심많은", "느긋한", "활발한", "우아한", "엉뚱한", "애교많은", "부지런한"
+  };
 
-  private final String[] NOUNS = {"골목길", "노을", "카페", "창가", "바람", "달빛", "책방", "기억", "의자", "향기"};
+  private final String[] NOUNS = {
+    "고양이", "강아지", "여우", "호랑이", "토끼", "펭귄", "다람쥐", "늑대", "사슴", "고래", "햄스터", "코끼리", "기린", "판다"
+  };
 
   @Value("${DEFAULT_PROFILE_URL}")
   private String defaultImageUrl;
