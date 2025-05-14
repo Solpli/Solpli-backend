@@ -58,7 +58,12 @@ public enum ErrorCode {
   BLANK_MOOD_TAG_VALUE(HttpStatus.BAD_REQUEST, "분위기 태그 값은 비어 있을 수 없습니다."),
   EMPTY_SOLO_TAG(HttpStatus.BAD_REQUEST, "1인 이용 태그는 최소 1개 이상 선택해야 합니다."),
   BLANK_SOLO_TAG_VALUE(HttpStatus.BAD_REQUEST, "1인 이용 태그 값은 비어 있을 수 없습니다."),
-  INVALID_CONTENT_LENGTH(HttpStatus.BAD_REQUEST, "리뷰 내용은 최대 500자까지 입력할 수 있습니다.");
+  INVALID_CONTENT_LENGTH(HttpStatus.BAD_REQUEST, "리뷰 내용은 최대 500자까지 입력할 수 있습니다."),
+
+  // 쏠맵 기능 관련 에러
+  INVALID_VIEWPORT_COORDINATES(HttpStatus.BAD_REQUEST, "SW 좌표는 NE 좌표보다 작아야 합니다."),
+  CATEGORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 카테고리입니다."),
+  UNCATEGORIZED(HttpStatus.OK, "카테고리가 지정되지 않은 장소입니다.");
 
   private final HttpStatus httpStatus;
   private final String message;
