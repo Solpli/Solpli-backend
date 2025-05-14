@@ -6,6 +6,7 @@ import java.util.List;
 import jakarta.persistence.*;
 import lombok.*;
 
+import com.ilta.solepli.domain.place.entity.mapping.PlaceCategory;
 import com.ilta.solepli.global.entity.Timestamped;
 
 @Entity
@@ -32,10 +33,10 @@ public class Place extends Timestamped {
   private String neighborhood;
 
   @Column(nullable = false)
-  private String latitude;
+  private Double latitude;
 
   @Column(nullable = false)
-  private String longitude;
+  private Double longitude;
 
   @Column(nullable = false, name = "google_place_id")
   private String googlePlaceId;
@@ -44,6 +45,9 @@ public class Place extends Timestamped {
   private String types;
 
   private Double rating;
+
+  @OneToMany(mappedBy = "place", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  private List<PlaceCategory> placeCategories = new ArrayList<>();
 
   @OneToMany(mappedBy = "place", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   private List<PlaceHour> placeHours = new ArrayList<>();
