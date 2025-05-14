@@ -43,7 +43,7 @@ public class SecurityConfig {
                         "/v3/api-docs/**",
                         "/health/**")
                     .permitAll()
-                    .requestMatchers("/api/auth/**")
+                    .requestMatchers("/api/auth/**", "api/solmap/markers")
                     .permitAll() // 로그인과 회원가입은 인증 없이 접근 가능
                     .anyRequest()
                     .authenticated() // 그 외 요청은 인증 필요
