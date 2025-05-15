@@ -1,5 +1,6 @@
 package com.ilta.solepli.domain.solmap.service;
 
+import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 
 import com.ilta.solepli.domain.category.repository.CategoryRepository;
 import com.ilta.solepli.domain.place.entity.Place;
+import com.ilta.solepli.domain.place.entity.mapping.PlaceCategory;
 import com.ilta.solepli.domain.place.repository.PlaceRepository;
 import com.ilta.solepli.domain.solmap.dto.ViewportMapMarkerDetail;
 import com.ilta.solepli.domain.solmap.dto.ViewportMapMarkerResponse;
@@ -62,6 +64,7 @@ public class SolmapService {
   private ViewportMapMarkerDetail toMarkerDetail(Place p) {
     String firstCategory =
         p.getPlaceCategories().stream()
+            .sorted(Comparator.comparing(PlaceCategory::getId))
             .map(pc -> pc.getCategory().getName())
             .findFirst()
             .orElseThrow(() -> new CustomException(ErrorCode.UNCATEGORIZED));
