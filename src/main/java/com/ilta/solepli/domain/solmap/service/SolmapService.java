@@ -37,7 +37,8 @@ public class SolmapService {
         placeRepository.findInViewportWithOptionalCategory(swLat, swLng, neLat, neLng, category);
 
     // 마커 관련 데이터 리스트
-    List<ViewportMapMarkerDetail> markerDetails = place.stream().map(this::toMarkerDetail).toList();
+    List<ViewportMapMarkerDetail> markerDetails =
+        place.stream().map(p -> toMarkerDetail(p, category)).toList();
     // 마커 카테고리 리스트
     List<String> categories =
         place.stream()
@@ -61,14 +62,20 @@ public class SolmapService {
     }
   }
 
-  private ViewportMapMarkerDetail toMarkerDetail(Place p) {
-    String firstCategory =
-        p.getPlaceCategories().stream()
-            .sorted(Comparator.comparing(PlaceCategory::getId))
-            .map(pc -> pc.getCategory().getName())
-            .findFirst()
-            .orElseThrow(() -> new CustomException(ErrorCode.UNCATEGORIZED));
+  private ViewportMapMarkerDetail toMarkerDetail(Place p, String selectedCategory) {
+    String category;
 
-    return ViewportMapMarkerDetail.of(p.getId(), p.getLatitude(), p.getLongitude(), firstCategory);
+    if (selectedCategory != null) {
+      category = selectedCategory;
+    } else {
+      category =
+          p.getPlaceCategories().stream()
+              .sorted(Comparator.comparing(PlaceCategory::getId))
+              .map(pc -> pc.getCategory().getName())
+              .findFirst()
+              .orElseThrow(() -> new CustomException(ErrorCode.UNCATEGORIZED));
+    }
+
+    return ViewportMapMarkerDetail.of(p.getId(), p.getLatitude(), p.getLongitude(), category);
   }
 }
