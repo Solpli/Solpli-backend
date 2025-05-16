@@ -76,6 +76,11 @@ public class SolmapService {
               .orElseThrow(() -> new CustomException(ErrorCode.UNCATEGORIZED));
     }
 
-    return ViewportMapMarkerDetail.of(p.getId(), p.getLatitude(), p.getLongitude(), category);
+    return ViewportMapMarkerDetail.builder()
+        .id(p.getId())
+        .latitude(p.getLatitude())
+        .longitude(p.getLongitude())
+        .category(category)
+        .build();
   }
 }
