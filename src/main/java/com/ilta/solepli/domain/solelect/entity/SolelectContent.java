@@ -24,7 +24,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Table(name = "solelect_places")
+@Table(name = "solelect_contents")
 public class SolelectContent {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
