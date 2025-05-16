@@ -1,4 +1,4 @@
-package com.ilta.solepli.domain.solmap.service;
+package com.ilta.solepli.domain.solemap.service;
 
 import java.util.Comparator;
 import java.util.List;
@@ -12,8 +12,8 @@ import com.ilta.solepli.domain.category.repository.CategoryRepository;
 import com.ilta.solepli.domain.place.entity.Place;
 import com.ilta.solepli.domain.place.entity.mapping.PlaceCategory;
 import com.ilta.solepli.domain.place.repository.PlaceRepository;
-import com.ilta.solepli.domain.solmap.dto.ViewportMapMarkerDetail;
-import com.ilta.solepli.domain.solmap.dto.ViewportMapMarkerResponse;
+import com.ilta.solepli.domain.solemap.dto.ViewportMapMarkerDetail;
+import com.ilta.solepli.domain.solemap.dto.ViewportMapMarkerResponse;
 import com.ilta.solepli.global.exception.CustomException;
 import com.ilta.solepli.global.exception.ErrorCode;
 
