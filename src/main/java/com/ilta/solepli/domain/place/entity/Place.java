@@ -1,22 +1,12 @@
 package com.ilta.solepli.domain.place.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
+import com.ilta.solepli.domain.place.entity.mapping.PlaceCategory;
 import com.ilta.solepli.global.entity.Timestamped;
 
 @Entity
@@ -43,10 +33,10 @@ public class Place extends Timestamped {
   private String neighborhood;
 
   @Column(nullable = false)
-  private String latitude;
+  private Double latitude;
 
   @Column(nullable = false)
-  private String longitude;
+  private Double longitude;
 
   @Column(nullable = false, name = "google_place_id")
   private String googlePlaceId;
@@ -57,7 +47,10 @@ public class Place extends Timestamped {
   private Double rating;
 
   @OneToMany(mappedBy = "place", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-  private List<PlaceHour> placeHours;
+  private List<PlaceCategory> placeCategories = new ArrayList<>();
+
+  @OneToMany(mappedBy = "place", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  private List<PlaceHour> placeHours = new ArrayList<>();
 
   public void updateRating(Double rating) {
     this.rating = rating;
