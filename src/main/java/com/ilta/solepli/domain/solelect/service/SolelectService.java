@@ -79,7 +79,7 @@ public class SolelectService {
                 .solelect(solelect)
                 .seq(content.seq())
                 .type(content.type())
-                .imageUrl(content.content())
+                .filename(content.content())
                 .build();
       }
       solelectContents.add(solelectContent);
@@ -122,7 +122,7 @@ public class SolelectService {
   private SolelectContent findImage(List<SolelectContent> solelectContents, String filename) {
     for (SolelectContent solelectContent : solelectContents) {
       if (solelectContent.getType().equals(ContentType.IMAGE)
-          && solelectContent.getImageUrl().equals(filename)) {
+          && solelectContent.getFilename().equals(filename)) {
         return solelectContent;
       }
     }

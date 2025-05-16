@@ -41,6 +41,8 @@ public class SolelectContent {
 
   private String imageUrl;
 
+  private String filename;
+
   @Builder.Default private Boolean isThumbnail = false;
 
   @ManyToOne(fetch = FetchType.LAZY)
