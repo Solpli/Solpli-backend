@@ -41,6 +41,8 @@ public class SolelectContent {
 
   private String imageUrl;
 
+  @Builder.Default private Boolean isThumbnail = false;
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "solelect_id")
   @OnDelete(action = OnDeleteAction.CASCADE)
@@ -48,5 +50,9 @@ public class SolelectContent {
 
   public void updateImageUrl(String imageUrl) {
     this.imageUrl = imageUrl;
+  }
+
+  public void updateIsThumbnail(Boolean isThumbnail) {
+    this.isThumbnail = isThumbnail;
   }
 }

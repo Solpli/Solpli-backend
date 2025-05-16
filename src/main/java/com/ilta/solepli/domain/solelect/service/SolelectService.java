@@ -113,13 +113,18 @@ public class SolelectService {
       }
       String imageUrl = s3Service.uploadSolelectImage(file);
       solelectContent.updateImageUrl(imageUrl);
+      if (solelectContent.getSeq() == 0) {
+        solelectContent.updateIsThumbnail(true);
+      }
     }
   }
 
   private SolelectContent findImage(List<SolelectContent> solelectContents, String filename) {
     for (SolelectContent solelectContent : solelectContents) {
       if (solelectContent.getType().equals(ContentType.IMAGE)
-          && solelectContent.getImageUrl().equals(filename)) return solelectContent;
+          && solelectContent.getImageUrl().equals(filename)) {
+        return solelectContent;
+      }
     }
     return null;
   }
