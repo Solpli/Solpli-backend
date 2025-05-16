@@ -13,8 +13,8 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
   @Query(
       "SELECT p "
           + "FROM Place p "
-          + "JOIN p.placeCategories pc "
-          + "JOIN pc.category c "
+          + "JOIN fetch p.placeCategories pc "
+          + "JOIN fetch pc.category c "
           + "WHERE p.latitude BETWEEN :swLat AND :neLat "
           + "AND p.longitude BETWEEN :swLng AND :neLng "
           + "AND (:category IS NULL OR c.name = :category)")
