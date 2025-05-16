@@ -45,4 +45,8 @@ public class SolelectContent {
   @JoinColumn(name = "solelect_id")
   @OnDelete(action = OnDeleteAction.CASCADE)
   private Solelect solelect;
+
+  public void updateImageUrl(String imageUrl) {
+    this.imageUrl = imageUrl;
+  }
 }

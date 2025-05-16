@@ -63,7 +63,12 @@ public enum ErrorCode {
   // 쏠맵 기능 관련 에러
   INVALID_VIEWPORT_COORDINATES(HttpStatus.BAD_REQUEST, "SW 좌표는 NE 좌표보다 작아야 합니다."),
   CATEGORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 카테고리입니다."),
-  UNCATEGORIZED(HttpStatus.OK, "카테고리가 지정되지 않은 장소입니다.");
+  UNCATEGORIZED(HttpStatus.OK, "카테고리가 지정되지 않은 장소입니다."),
+
+  // 쏠렉트 관련 에러
+  SOLELECT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 쏠렉트입니다."),
+  SOLELECT_FORBIDDEN(HttpStatus.FORBIDDEN, "쏠렉트의 소유자가 아닙니다."),
+  CONTENT_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 콘텐츠 이미지를 찾을 수 없습니다.");
 
   private final HttpStatus httpStatus;
   private final String message;
