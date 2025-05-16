@@ -1,6 +1,6 @@
 package com.ilta.solepli.domain.solelect.entity;
 
-public enum SolelectType {
+public enum ContentType {
   TEXT,
   IMAGE;
 }

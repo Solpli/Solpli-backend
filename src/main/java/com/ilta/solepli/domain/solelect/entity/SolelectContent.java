@@ -35,7 +35,7 @@ public class SolelectContent {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private SolelectType type;
+  private ContentType type;
 
   private String text;
 
