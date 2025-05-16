@@ -11,16 +11,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 import com.ilta.solepli.domain.solmap.dto.ViewportMapMarkerResponse;
-import com.ilta.solepli.domain.solmap.service.SolmapService;
+import com.ilta.solepli.domain.solmap.service.SolemapService;
 import com.ilta.solepli.global.response.SuccessResponse;
 
 @RestController
-@RequestMapping("/api/solmap")
+@RequestMapping("/api/solemap")
 @RequiredArgsConstructor
-@Tag(name = "SolmapController", description = "쏠맵 관련 API")
-public class SolmapController {
+@Tag(name = "SolemapController", description = "쏠맵 관련 API")
+public class SolemapController {
 
-  private final SolmapService solemapService;
+  private final SolemapService solemapService;
 
   @Operation(summary = "지도 화면 내 장소 마커 정보 조회 API", description = "지도 화면 내 장소 마커 정보들을 조회하는 API 입니다.")
   @GetMapping("/markers")

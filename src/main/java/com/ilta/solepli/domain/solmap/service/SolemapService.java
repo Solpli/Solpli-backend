@@ -19,7 +19,7 @@ import com.ilta.solepli.global.exception.ErrorCode;
 
 @Service
 @RequiredArgsConstructor
-public class SolmapService {
+public class SolemapService {
 
   private final PlaceRepository placeRepository;
   private final CategoryRepository categoryRepository;
