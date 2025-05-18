@@ -2,6 +2,7 @@ package com.ilta.solepli.domain.solelect.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -138,7 +139,7 @@ public class SolelectService {
     }
 
     // 기존 쏠렉트 장소와 쏠렉트 콘텐츠 삭제 후 다시 저장
-    deleteImages(solelect.getSolelectContents());
+    deleteS3Images(solelect.getSolelectContents());
     solelectPlaceRepository.deleteBySolelect(solelect);
     solelectPlaceRepository.flush();
     solelectContentRepository.deleteBySolelect(solelect);
@@ -201,7 +202,7 @@ public class SolelectService {
       throw new CustomException(ErrorCode.SOLELECT_FORBIDDEN);
     }
 
-    deleteImages(solelect.getSolelectContents());
+    deleteS3Images(solelect.getSolelectContents());
     solelectRepository.delete(solelect);
   }
 
@@ -215,10 +216,11 @@ public class SolelectService {
     return null;
   }
 
-  private void deleteImages(List<SolelectContent> solelectContents) {
+  private void deleteS3Images(List<SolelectContent> solelectContents) {
     solelectContents.stream()
         .filter(content -> content.getType() == ContentType.IMAGE)
         .map(SolelectContent::getImageUrl)
+        .filter(Objects::nonNull) // null인 경우 필터링
         .forEach(s3Service::deleteSolelectImage);
   }
 }
