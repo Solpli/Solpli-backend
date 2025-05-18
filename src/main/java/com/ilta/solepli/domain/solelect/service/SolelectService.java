@@ -105,6 +105,11 @@ public class SolelectService {
 
     List<SolelectContent> solelectContents = solelect.getSolelectContents();
 
+    if (files.size() > 100) {
+      solelectRepository.delete(solelect);
+      throw new CustomException(ErrorCode.TOO_MANY_SOLELECT_IMAGES);
+    }
+
     for (MultipartFile file : files) {
       String filename = file.getOriginalFilename();
       SolelectContent solelectContent = findImage(solelectContents, filename);
