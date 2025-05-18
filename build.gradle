@@ -64,6 +64,8 @@ dependencies {
 	// Amazon S3
 	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 
+	// Redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 }
 
 // Spotless 설정 (코드 스타일 자동 정리 도구)
