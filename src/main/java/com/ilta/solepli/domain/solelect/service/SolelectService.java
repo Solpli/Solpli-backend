@@ -189,6 +189,22 @@ public class SolelectService {
     solelectContentRepository.saveAll(solelectContents);
   }
 
+  @Transactional
+  public void deleteSolelect(Long id, User user) {
+    Solelect solelect =
+        solelectRepository
+            .findWithContentById(id)
+            .orElseThrow(() -> new CustomException(ErrorCode.SOLELECT_NOT_FOUND));
+
+    // 쏠렉트 소유자가 맞는지 검증
+    if (!solelect.getUser().getId().equals(user.getId())) {
+      throw new CustomException(ErrorCode.SOLELECT_FORBIDDEN);
+    }
+
+    deleteImages(solelect.getSolelectContents());
+    solelectRepository.delete(solelect);
+  }
+
   private SolelectContent findImage(List<SolelectContent> solelectContents, String filename) {
     for (SolelectContent solelectContent : solelectContents) {
       if (solelectContent.getType().equals(ContentType.IMAGE)

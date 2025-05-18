@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -75,5 +76,13 @@ public class SolelectController {
       @AuthenticationPrincipal CustomUserDetails userDetails) {
     solelectService.updateSolelect(id, request, userDetails.user());
     return ResponseEntity.ok().body(SuccessResponse.successWithNoData("쏠렉트 수정 성공"));
+  }
+
+  @Operation(summary = "쏠렉트 삭제 API", description = "쏠렉트를 삭제하는 API입니다.")
+  @DeleteMapping("/{id}")
+  public ResponseEntity<SuccessResponse<Void>> deleteSolelect(
+      @PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    solelectService.deleteSolelect(id, userDetails.user());
+    return ResponseEntity.ok().body(SuccessResponse.successWithNoData("쏠렉트 삭제 성공"));
   }
 }
