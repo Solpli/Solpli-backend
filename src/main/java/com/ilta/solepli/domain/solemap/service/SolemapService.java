@@ -1,8 +1,11 @@
 package com.ilta.solepli.domain.solemap.service;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +26,10 @@ public class SolemapService {
 
   private final PlaceRepository placeRepository;
   private final CategoryRepository categoryRepository;
+  private final RedisTemplate<String, Object> redisTemplate;
+
+  private static String RECENT_SEARCH_PREFIX = "recent_search:";
+  private static int MAX_RECENT_SEARCH = 10;
 
   @Transactional(readOnly = true)
   public ViewportMapMarkerResponse getMarkersByViewport(
@@ -82,5 +89,32 @@ public class SolemapService {
         .longitude(p.getLongitude())
         .category(category)
         .build();
+  }
+
+  /**
+   * 사용자가 검색한 키워드를 ZSET에 추가하고, 최대 저장 개수를 초과한 오래된 항목은 삭제한다.
+   *
+   * @param userId 사용자 식별자
+   * @param keyword 검색어
+   */
+  public void addRecentSearch(String userId, String keyword) {
+    String key = keyBuild(userId);
+    long score = System.currentTimeMillis();
+
+    // ZSET에 (키워드, timestamp) 쌍으로 추가
+    redisTemplate.opsForZSet().add(key, keyword, score);
+
+    // 최신 MAX_RECENT_SEARCH개를 제외한 나머지(가장 오래된) 삭제
+    redisTemplate.opsForZSet().removeRange(key, 0, -MAX_RECENT_SEARCH - 1);
+  }
+
+  /**
+   * Redis에 저장할 키를 생성한다.
+   *
+   * @param userId 사용자 식별자
+   * @return "recent_search:{userId}" 형태의 최종 키
+   */
+  private String keyBuild(String userId) {
+    return RECENT_SEARCH_PREFIX + userId;
   }
 }
