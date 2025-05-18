@@ -117,4 +117,24 @@ public class SolemapService {
   private String keyBuild(String userId) {
     return RECENT_SEARCH_PREFIX + userId;
   }
+
+  /**
+   * 사용자의 최근 검색어를 최신순으로 조회한다.
+   *
+   * @param userId 사용자 식별자
+   * @return 최대 MAX_RECENT_SEARCH개까지의 검색어 리스트
+   */
+  public List<String> getRecentSearch(String userId) {
+    String key = keyBuild(userId);
+
+    // ZSET을 score 내림차순으로 조회
+    Set<Object> range = redisTemplate.opsForZSet().reverseRange(key, 0, MAX_RECENT_SEARCH - 1);
+
+    if (range == null || range.isEmpty()) {
+      return Collections.emptyList();
+    }
+
+    // Object → String 변환
+    return range.stream().map(Object::toString).toList();
+  }
 }

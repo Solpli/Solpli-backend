@@ -53,4 +53,14 @@ public class SolemapController {
             SuccessResponse.successWithNoData(
                 keywordRequest.getKeyword() + " 검색어가 최근 목록에 반영 되었습니다."));
   }
+
+  @Operation(summary = "최근 검색어 조회 API", description = "최근 검색어를 조회하는 API 입니다.")
+  @GetMapping("/search/recent")
+  public ResponseEntity<SuccessResponse<List<String>>> getRecentSearch(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+    List<String> recentSearch = solemapService.getRecentSearch(customUserDetails.getUsername());
+
+    return ResponseEntity.ok(SuccessResponse.successWithData(recentSearch));
+  }
 }
