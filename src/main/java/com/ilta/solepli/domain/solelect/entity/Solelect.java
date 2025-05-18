@@ -49,4 +49,8 @@ public class Solelect {
   @OneToMany(mappedBy = "solelect", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
   private List<SolelectContent> solelectContents = new ArrayList<>();
+
+  public void updateTitle(String title) {
+    this.title = title;
+  }
 }

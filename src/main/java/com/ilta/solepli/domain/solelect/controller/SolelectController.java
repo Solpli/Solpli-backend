@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -21,6 +22,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import com.ilta.solepli.domain.solelect.dto.request.SolelectCreateRequest;
+import com.ilta.solepli.domain.solelect.dto.request.SolelectUpdateRequest;
 import com.ilta.solepli.domain.solelect.dto.response.SolelectCreateResponse;
 import com.ilta.solepli.domain.solelect.service.SolelectService;
 import com.ilta.solepli.domain.user.util.CustomUserDetails;
@@ -38,7 +40,7 @@ public class SolelectController {
       summary = "쏠렉트 등록 API",
       description =
           "쏠렉트를 등록하는 API입니다. 제목, 내용, 장소 ID들을 보내주세요. 여기서 내용은 타입 (TEXT or IMAGE), 순서, 내용(TEXT의 경우 글의 내용, IMAGE의 경우 이미지 파일의 이름)입니다.")
-  @PostMapping()
+  @PostMapping
   public ResponseEntity<SuccessResponse<SolelectCreateResponse>> createSolelect(
       @Valid @RequestBody SolelectCreateRequest request,
       @AuthenticationPrincipal CustomUserDetails userDetails) {
@@ -49,7 +51,7 @@ public class SolelectController {
                 solelectService.createSolelect(request, userDetails.user())));
   }
 
-  @Operation(summary = "쏠렉트 이미지 업로드 API", description = "쏠렉트의 이미지를 업로드하는 API입니다.")
+  @Operation(summary = "쏠렉트 이미지 업로드 API", description = "쏠렉트의 이미지를 업로드하는 API입니다. (등록 or 수정시 사용)")
   @PostMapping(value = "/{id}/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<SuccessResponse<Void>> uploadSolelectImage(
       @PathVariable Long id,
@@ -63,5 +65,15 @@ public class SolelectController {
     solelectService.uploadSolelectImage(id, files, userDetails.user());
 
     return ResponseEntity.ok().body(SuccessResponse.successWithNoData("쏠렉트 이미지 업로드 성공"));
+  }
+
+  @Operation(summary = "쏠렉트 수정 API", description = "쏠렉트를 수정하는 API입니다.")
+  @PutMapping("/{id}")
+  public ResponseEntity<SuccessResponse<Void>> updateSolelect(
+      @PathVariable Long id,
+      @RequestBody SolelectUpdateRequest request,
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
+    solelectService.updateSolelect(id, request, userDetails.user());
+    return ResponseEntity.ok().body(SuccessResponse.successWithNoData("쏠렉트 수정 성공"));
   }
 }
