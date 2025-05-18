@@ -49,7 +49,7 @@ public enum ErrorCode {
 
   // 리뷰 등록 관련 에러
   REVIEW_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "해당 장소에 이미 리뷰를 작성하셨습니다."),
-  TOO_MANY_IMAGES(HttpStatus.BAD_REQUEST, "리뷰 사진은 최대 5장까지 가능합니다."),
+  TOO_MANY_REVIEW_IMAGES(HttpStatus.BAD_REQUEST, "리뷰 사진은 최대 5장까지 가능합니다."),
   INVALID_RECOMMENDATION(HttpStatus.BAD_REQUEST, "1인 추천 여부는 필수입니다."),
   INVALID_PLACE_ID_NULL(HttpStatus.BAD_REQUEST, "장소 ID는 필수입니다."),
   INVALID_RATING_NULL(HttpStatus.BAD_REQUEST, "평점은 필수입니다."),
