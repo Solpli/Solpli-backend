@@ -137,4 +137,21 @@ public class SolemapService {
     // Object → String 변환
     return range.stream().map(Object::toString).toList();
   }
+
+  /**
+   * 사용자의 특정 검색어를 ZSET에서 제거한다. 존재하지 않는 키워드면 404 예외를 던진다.
+   *
+   * @param userId 사용자 식별자
+   * @param keyword 삭제할 검색어
+   */
+  public void deleteRecentSearch(String userId, String keyword) {
+    String key = keyBuild(userId);
+
+    Long removed = redisTemplate.opsForZSet().remove(key, keyword);
+
+    // 삭제결과가 없거나 null 이면 예외 발생
+    if (removed == null || removed == 0) {
+      throw new CustomException(ErrorCode.RECENT_SEARCH_NOT_FOUND);
+    }
+  }
 }

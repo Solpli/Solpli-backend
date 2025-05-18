@@ -63,4 +63,14 @@ public class SolemapController {
 
     return ResponseEntity.ok(SuccessResponse.successWithData(recentSearch));
   }
+
+  @Operation(summary = "최근 검색어 삭제 API", description = "최근 검색어를 삭제하는 API 입니다.")
+  @DeleteMapping("/search/recent/{keyword}")
+  public ResponseEntity<SuccessResponse<Void>> deleteRecentSearch(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable String keyword) {
+
+    solemapService.deleteRecentSearch(customUserDetails.getUsername(), keyword);
+
+    return ResponseEntity.ok(SuccessResponse.successWithNoData(keyword + " 검색어 삭제 성공"));
+  }
 }
