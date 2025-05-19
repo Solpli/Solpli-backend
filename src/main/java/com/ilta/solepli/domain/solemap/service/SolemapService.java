@@ -28,8 +28,8 @@ public class SolemapService {
   private final CategoryRepository categoryRepository;
   private final RedisTemplate<String, Object> redisTemplate;
 
-  private static String RECENT_SEARCH_PREFIX = "recent_search:";
-  private static int MAX_RECENT_SEARCH = 10;
+  private static final String RECENT_SEARCH_PREFIX = "solemap_recent_search:";
+  private static final int MAX_RECENT_SEARCH = 10;
 
   @Transactional(readOnly = true)
   public ViewportMapMarkerResponse getMarkersByViewport(
