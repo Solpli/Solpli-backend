@@ -202,8 +202,11 @@ public class SolelectService {
       throw new CustomException(ErrorCode.SOLELECT_FORBIDDEN);
     }
 
-    deleteS3Images(solelect.getSolelectContents());
-    solelectRepository.delete(solelect);
+    // 추후에 S3 용량 문제 발생시 다시 활성화
+    // deleteS3Images(solelect.getSolelectContents());
+
+    solelect.softDelete();
+    // solelectRepository.delete(solelect);
   }
 
   private SolelectContent findImage(List<SolelectContent> solelectContents, String filename) {
