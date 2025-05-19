@@ -1,17 +1,20 @@
 package com.ilta.solepli.domain.solemap.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import com.ilta.solepli.domain.solemap.dto.KeywordRequest;
 import com.ilta.solepli.domain.solemap.dto.ViewportMapMarkerResponse;
 import com.ilta.solepli.domain.solemap.service.SolemapService;
+import com.ilta.solepli.domain.user.util.CustomUserDetails;
 import com.ilta.solepli.global.response.SuccessResponse;
 
 @RestController
@@ -35,5 +38,39 @@ public class SolemapController {
         .body(
             SuccessResponse.successWithData(
                 solemapService.getMarkersByViewport(swLat, swLng, neLat, neLng, category)));
+  }
+
+  @Operation(summary = "최근 검색어 저장 API", description = "최근 검색어를 저장하는 API 입니다.")
+  @PostMapping("/search/recent")
+  public ResponseEntity<SuccessResponse<Void>> addRecentSearch(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails,
+      @Valid @RequestBody KeywordRequest keywordRequest) {
+
+    solemapService.addRecentSearch(customUserDetails.getUsername(), keywordRequest.getKeyword());
+
+    return ResponseEntity.status(201)
+        .body(
+            SuccessResponse.successWithNoData(
+                keywordRequest.getKeyword() + " 검색어가 최근 목록에 반영 되었습니다."));
+  }
+
+  @Operation(summary = "최근 검색어 조회 API", description = "최근 검색어를 조회하는 API 입니다.")
+  @GetMapping("/search/recent")
+  public ResponseEntity<SuccessResponse<List<String>>> getRecentSearch(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+    List<String> recentSearch = solemapService.getRecentSearch(customUserDetails.getUsername());
+
+    return ResponseEntity.ok(SuccessResponse.successWithData(recentSearch));
+  }
+
+  @Operation(summary = "최근 검색어 삭제 API", description = "최근 검색어를 삭제하는 API 입니다.")
+  @DeleteMapping("/search/recent/{keyword}")
+  public ResponseEntity<SuccessResponse<Void>> deleteRecentSearch(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable String keyword) {
+
+    solemapService.deleteRecentSearch(customUserDetails.getUsername(), keyword);
+
+    return ResponseEntity.ok(SuccessResponse.successWithNoData(keyword + " 검색어 삭제 성공"));
   }
 }

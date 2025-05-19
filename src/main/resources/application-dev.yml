@@ -1,0 +1,90 @@
+spring:
+
+  # .env import
+  config:
+    import: optional:file:./.env[.properties]
+
+  # Database
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DB_USER}
+    password: ${DB_PASS}
+    url: ${DB_URL}
+
+  # Spring Data JPA
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    open-in-view: 'false'
+    database-platform: org.hibernate.dialect.MySQLDialect
+    properties:
+      hibernate:
+        format_sql: true # SQL 포맷팅
+        highlight_sql: true # ANSI 코드에 색을 나타냄
+        use_sql_comments: true # SQL 내부에 /* */ 주석 추가
+
+  servlet:
+    multipart:
+      max-file-size: 5MB # 업로드할 수 있는 개별 파일의 최대 크기.
+      max-request-size: 100MB # multipart/form-data 요청의 최대 허용 크기.
+
+  # JWT
+  jwt:
+    secret: ${JWT_SECRET}
+    access:
+      token:
+        expiration: ${JWT_EXPIRATION}
+
+  # Redis
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      ssl-enable: false
+      skip-ssl-verify: true
+
+# logging
+logging:
+  level:
+    org:
+      springframework:
+        core:
+          LocalVariableTableParameterNameDiscoverer: error
+      hibernate:
+        sql: debug
+        type.descriptor.sql: trace # 파라미터 값 추가
+        sql.results.internal.ResultsHelper: INFO # OneToMany 조회 관련 로그 숨김
+    p6spy:
+
+# p6spy log
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: true
+
+# promethues
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus
+  server:
+    port: ${SECRET_PORT}
+    base-path: ${SECRET_PATH}
+
+server:
+  url: ${SERVER_URL}
+
+# AWS S3
+cloud:
+  aws:
+    credentials:
+      access-key: ${S3_ACCESS_KEY}
+      secret-key: ${S3_SECRET_KEY}
+    region:
+      static: ${S3_REGION}  # 버킷의 리전
+    s3:
+      bucket: ${S3_BUCKET}
+    stack:
+      auto: false
