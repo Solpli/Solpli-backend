@@ -29,8 +29,8 @@ public class S3Service {
   @Value("${S3_REVIEW_FOLDER}")
   private String reviewFolderName;
 
-  @Value("${S3_SOLELECT_FOLDER}")
-  private String solelectFolderName;
+  @Value("${S3_SOLLECT_FOLDER}")
+  private String sollectFolderName;
 
   private final AmazonS3 amazonS3;
 
@@ -78,13 +78,13 @@ public class S3Service {
     return amazonS3.getUrl(bucketName, fileName).toString();
   }
 
-  public String uploadSolelectImage(MultipartFile file) {
+  public String uploadSollectImage(MultipartFile file) {
 
     // 파일 확장자 유효성 검사
     validateImageExtension(file);
 
     // 파일명을 고유하게 지정
-    String fileName = solelectFolderName + "/" + createFileName(file.getOriginalFilename());
+    String fileName = sollectFolderName + "/" + createFileName(file.getOriginalFilename());
 
     // 메타 데이터 추출
     ObjectMetadata objectMetadata = getObjectMetaData(file);
@@ -116,7 +116,7 @@ public class S3Service {
     }
   }
 
-  public void deleteSolelectImage(String fileUrl) {
+  public void deleteSollectImage(String fileUrl) {
     try {
       System.out.println(extractKeyFromUrl(fileUrl));
       amazonS3.deleteObject(bucketName, extractKeyFromUrl(fileUrl));

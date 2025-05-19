@@ -66,9 +66,9 @@ public enum ErrorCode {
   UNCATEGORIZED(HttpStatus.OK, "카테고리가 지정되지 않은 장소입니다."),
 
   // 쏠렉트 관련 에러
-  SOLELECT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 쏠렉트입니다."),
-  SOLELECT_FORBIDDEN(HttpStatus.FORBIDDEN, "쏠렉트의 소유자가 아닙니다."),
-  TOO_MANY_SOLELECT_IMAGES(HttpStatus.BAD_REQUEST, "쏠렉트 사진은 최대 100장까지 가능합니다."),
+  SOLLECT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 쏠렉트입니다."),
+  SOLLECT_FORBIDDEN(HttpStatus.FORBIDDEN, "쏠렉트의 소유자가 아닙니다."),
+  TOO_MANY_SOLLECT_IMAGES(HttpStatus.BAD_REQUEST, "쏠렉트 사진은 최대 100장까지 가능합니다."),
   CONTENT_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 콘텐츠 이미지를 찾을 수 없습니다."),
 
   // 최근 검색어 관련 에러

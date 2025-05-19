@@ -1,4 +1,4 @@
-package com.ilta.solepli.domain.solelect.entity;
+package com.ilta.solepli.domain.sollect.entity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import com.ilta.solepli.domain.solelect.entity.mapping.SolelectPlace;
+import com.ilta.solepli.domain.sollect.entity.mapping.SollectPlace;
 import com.ilta.solepli.domain.user.entity.User;
 import com.ilta.solepli.global.entity.Timestamped;
 
@@ -30,8 +30,8 @@ import com.ilta.solepli.global.entity.Timestamped;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Table(name = "solelects")
-public class Solelect extends Timestamped {
+@Table(name = "sollects")
+public class Sollect extends Timestamped {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -43,13 +43,13 @@ public class Solelect extends Timestamped {
   @OnDelete(action = OnDeleteAction.CASCADE)
   private User user;
 
-  @OneToMany(mappedBy = "solelect", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "sollect", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
-  private List<SolelectPlace> sollectPlaces = new ArrayList<>();
+  private List<SollectPlace> sollectPlaces = new ArrayList<>();
 
-  @OneToMany(mappedBy = "solelect", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "sollect", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
-  private List<SolelectContent> solelectContents = new ArrayList<>();
+  private List<SollectContent> sollectContents = new ArrayList<>();
 
   public void updateTitle(String title) {
     this.title = title;
