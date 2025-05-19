@@ -1,6 +1,9 @@
-package com.ilta.solepli.domain.solelect.entity.mapping;
+package com.ilta.solepli.domain.sollect.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,8 +19,6 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import com.ilta.solepli.domain.place.entity.Place;
-import com.ilta.solepli.domain.solelect.entity.Solelect;
 import com.ilta.solepli.global.entity.Timestamped;
 
 @Entity
@@ -25,19 +26,37 @@ import com.ilta.solepli.global.entity.Timestamped;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Table(name = "solelect_places")
-public class SolelectPlace extends Timestamped {
+@Table(name = "sollect_contents")
+public class SollectContent extends Timestamped {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "solelect_id")
-  @OnDelete(action = OnDeleteAction.CASCADE)
-  private Solelect solelect;
+  @Column(nullable = false)
+  private Long seq;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private ContentType type;
+
+  private String text;
+
+  private String imageUrl;
+
+  private String filename;
+
+  @Builder.Default private Boolean isThumbnail = false;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "place_id")
+  @JoinColumn(name = "sollect_id")
   @OnDelete(action = OnDeleteAction.CASCADE)
-  private Place place;
+  private Sollect sollect;
+
+  public void updateImageUrl(String imageUrl) {
+    this.imageUrl = imageUrl;
+  }
+
+  public void updateIsThumbnail(Boolean isThumbnail) {
+    this.isThumbnail = isThumbnail;
+  }
 }

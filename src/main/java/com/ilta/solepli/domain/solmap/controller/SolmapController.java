@@ -1,4 +1,4 @@
-package com.ilta.solepli.domain.solemap.controller;
+package com.ilta.solepli.domain.solmap.controller;
 
 import java.util.List;
 
@@ -11,19 +11,19 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-import com.ilta.solepli.domain.solemap.dto.KeywordRequest;
-import com.ilta.solepli.domain.solemap.dto.ViewportMapMarkerResponse;
-import com.ilta.solepli.domain.solemap.service.SolemapService;
+import com.ilta.solepli.domain.solmap.dto.KeywordRequest;
+import com.ilta.solepli.domain.solmap.dto.ViewportMapMarkerResponse;
+import com.ilta.solepli.domain.solmap.service.SolmapService;
 import com.ilta.solepli.domain.user.util.CustomUserDetails;
 import com.ilta.solepli.global.response.SuccessResponse;
 
 @RestController
-@RequestMapping("/api/solemap")
+@RequestMapping("/api/solmap")
 @RequiredArgsConstructor
-@Tag(name = "SolemapController", description = "쏠맵 관련 API")
-public class SolemapController {
+@Tag(name = "SolmapController", description = "쏠맵 관련 API")
+public class SolmapController {
 
-  private final SolemapService solemapService;
+  private final SolmapService solmapService;
 
   @Operation(summary = "지도 화면 내 장소 마커 정보 조회 API", description = "지도 화면 내 장소 마커 정보들을 조회하는 API 입니다.")
   @GetMapping("/markers")
@@ -37,7 +37,7 @@ public class SolemapController {
     return ResponseEntity.ok()
         .body(
             SuccessResponse.successWithData(
-                solemapService.getMarkersByViewport(swLat, swLng, neLat, neLng, category)));
+                solmapService.getMarkersByViewport(swLat, swLng, neLat, neLng, category)));
   }
 
   @Operation(summary = "최근 검색어 저장 API", description = "최근 검색어를 저장하는 API 입니다.")
@@ -46,7 +46,7 @@ public class SolemapController {
       @AuthenticationPrincipal CustomUserDetails customUserDetails,
       @Valid @RequestBody KeywordRequest keywordRequest) {
 
-    solemapService.addRecentSearch(customUserDetails.getUsername(), keywordRequest.getKeyword());
+    solmapService.addRecentSearch(customUserDetails.getUsername(), keywordRequest.getKeyword());
 
     return ResponseEntity.status(201)
         .body(
@@ -59,7 +59,7 @@ public class SolemapController {
   public ResponseEntity<SuccessResponse<List<String>>> getRecentSearch(
       @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
-    List<String> recentSearch = solemapService.getRecentSearch(customUserDetails.getUsername());
+    List<String> recentSearch = solmapService.getRecentSearch(customUserDetails.getUsername());
 
     return ResponseEntity.ok(SuccessResponse.successWithData(recentSearch));
   }
@@ -69,7 +69,7 @@ public class SolemapController {
   public ResponseEntity<SuccessResponse<Void>> deleteRecentSearch(
       @AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable String keyword) {
 
-    solemapService.deleteRecentSearch(customUserDetails.getUsername(), keyword);
+    solmapService.deleteRecentSearch(customUserDetails.getUsername(), keyword);
 
     return ResponseEntity.ok(SuccessResponse.successWithNoData(keyword + " 검색어 삭제 성공"));
   }

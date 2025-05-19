@@ -43,7 +43,7 @@ public class SecurityConfig {
                         "/v3/api-docs/**",
                         "/health/**")
                     .permitAll()
-                    .requestMatchers("/api/auth/**", "/api/solemap/markers")
+                    .requestMatchers("/api/auth/**", "/api/solmap/markers")
                     .permitAll() // 로그인과 회원가입은 인증 없이 접근 가능
                     .anyRequest()
                     .authenticated() // 그 외 요청은 인증 필요
@@ -62,7 +62,10 @@ public class SecurityConfig {
     CorsConfiguration configuration = new CorsConfiguration();
 
     configuration.setAllowedOrigins(
-        Arrays.asList("http://localhost:3000", "http://localhost:8080")); // 추후 배포 시 변경 필요
+        Arrays.asList(
+            "http://localhost:3000",
+            "http://localhost:8080",
+            "http://localhost:5173")); // 추후 배포 시 변경 필요
     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(
         Arrays.asList("X-Requested-With", "Content-Type", "Authorization", "X-XSRF-token"));
