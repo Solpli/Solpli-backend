@@ -75,12 +75,12 @@ public class ReviewService {
 
     // 리뷰 이미지 저장
     if (files.size() > 5) {
-      throw new CustomException(ErrorCode.TOO_MANY_IMAGES);
+      throw new CustomException(ErrorCode.TOO_MANY_REVIEW_IMAGES);
     }
 
     List<ReviewImage> reviewImages = new ArrayList<>();
     for (MultipartFile file : files) {
-      if (file.getSize() > 10 * 1024 * 1024)
+      if (file.getSize() > 5 * 1024 * 1024)
         throw new CustomException(ErrorCode.IMAGE_SIZE_EXCEEDED);
       String imageUrl = s3Service.uploadReviewImage(file);
       ReviewImage reviewImage = ReviewImage.builder().imageUrl(imageUrl).review(review).build();
