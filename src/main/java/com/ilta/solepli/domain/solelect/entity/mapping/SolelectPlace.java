@@ -18,6 +18,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import com.ilta.solepli.domain.place.entity.Place;
 import com.ilta.solepli.domain.solelect.entity.Solelect;
+import com.ilta.solepli.global.entity.Timestamped;
 
 @Entity
 @Getter
@@ -25,7 +26,7 @@ import com.ilta.solepli.domain.solelect.entity.Solelect;
 @AllArgsConstructor
 @Builder
 @Table(name = "solelect_places")
-public class SolelectPlace {
+public class SolelectPlace extends Timestamped {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;

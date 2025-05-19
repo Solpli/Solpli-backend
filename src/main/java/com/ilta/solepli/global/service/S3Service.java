@@ -102,7 +102,7 @@ public class S3Service {
 
   public void deleteProfileImage(String fileUrl) {
     try {
-      amazonS3.deleteObject(profileFolderName, extractKeyFromUrl(fileUrl));
+      amazonS3.deleteObject(bucketName, extractKeyFromUrl(fileUrl));
     } catch (AmazonServiceException e) {
       throw new CustomException(ErrorCode.S3_DELETE_FAILURE);
     }
@@ -110,7 +110,7 @@ public class S3Service {
 
   public void deleteReviewImage(String fileUrl) {
     try {
-      amazonS3.deleteObject(reviewFolderName, extractKeyFromUrl(fileUrl));
+      amazonS3.deleteObject(bucketName, extractKeyFromUrl(fileUrl));
     } catch (AmazonServiceException e) {
       throw new CustomException(ErrorCode.S3_DELETE_FAILURE);
     }
@@ -118,7 +118,8 @@ public class S3Service {
 
   public void deleteSolelectImage(String fileUrl) {
     try {
-      amazonS3.deleteObject(solelectFolderName, extractKeyFromUrl(fileUrl));
+      System.out.println(extractKeyFromUrl(fileUrl));
+      amazonS3.deleteObject(bucketName, extractKeyFromUrl(fileUrl));
     } catch (AmazonServiceException e) {
       throw new CustomException(ErrorCode.S3_DELETE_FAILURE);
     }

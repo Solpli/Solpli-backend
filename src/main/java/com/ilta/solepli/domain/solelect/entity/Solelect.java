@@ -23,6 +23,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import com.ilta.solepli.domain.solelect.entity.mapping.SolelectPlace;
 import com.ilta.solepli.domain.user.entity.User;
+import com.ilta.solepli.global.entity.Timestamped;
 
 @Entity
 @Getter
@@ -30,7 +31,7 @@ import com.ilta.solepli.domain.user.entity.User;
 @AllArgsConstructor
 @Builder
 @Table(name = "solelects")
-public class Solelect {
+public class Solelect extends Timestamped {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -49,4 +50,8 @@ public class Solelect {
   @OneToMany(mappedBy = "solelect", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
   private List<SolelectContent> solelectContents = new ArrayList<>();
+
+  public void updateTitle(String title) {
+    this.title = title;
+  }
 }
