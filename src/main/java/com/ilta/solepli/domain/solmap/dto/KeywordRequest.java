@@ -1,4 +1,4 @@
-package com.ilta.solepli.domain.solemap.dto;
+package com.ilta.solepli.domain.solmap.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

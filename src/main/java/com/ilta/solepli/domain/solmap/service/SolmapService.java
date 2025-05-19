@@ -1,4 +1,4 @@
-package com.ilta.solepli.domain.solemap.service;
+package com.ilta.solepli.domain.solmap.service;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -15,20 +15,20 @@ import com.ilta.solepli.domain.category.repository.CategoryRepository;
 import com.ilta.solepli.domain.place.entity.Place;
 import com.ilta.solepli.domain.place.entity.mapping.PlaceCategory;
 import com.ilta.solepli.domain.place.repository.PlaceRepository;
-import com.ilta.solepli.domain.solemap.dto.ViewportMapMarkerDetail;
-import com.ilta.solepli.domain.solemap.dto.ViewportMapMarkerResponse;
+import com.ilta.solepli.domain.solmap.dto.ViewportMapMarkerDetail;
+import com.ilta.solepli.domain.solmap.dto.ViewportMapMarkerResponse;
 import com.ilta.solepli.global.exception.CustomException;
 import com.ilta.solepli.global.exception.ErrorCode;
 
 @Service
 @RequiredArgsConstructor
-public class SolemapService {
+public class SolmapService {
 
   private final PlaceRepository placeRepository;
   private final CategoryRepository categoryRepository;
   private final RedisTemplate<String, Object> redisTemplate;
 
-  private static final String RECENT_SEARCH_PREFIX = "solemap_recent_search:";
+  private static final String RECENT_SEARCH_PREFIX = "solmap_recent_search:";
   private static final int MAX_RECENT_SEARCH = 10;
 
   @Transactional(readOnly = true)
