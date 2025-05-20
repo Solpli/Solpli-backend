@@ -6,6 +6,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -22,6 +23,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import com.ilta.solepli.domain.sollect.dto.request.KeywordRequest;
 import com.ilta.solepli.domain.sollect.dto.request.SollectCreateRequest;
 import com.ilta.solepli.domain.sollect.dto.request.SollectUpdateRequest;
 import com.ilta.solepli.domain.sollect.dto.response.SollectCreateResponse;
@@ -84,5 +86,38 @@ public class SollectController {
       @PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
     sollectService.deleteSollect(id, userDetails.user());
     return ResponseEntity.ok().body(SuccessResponse.successWithNoData("쏠렉트 삭제 성공"));
+  }
+
+  @Operation(summary = "쏠렉트 최근 검색어 저장 API", description = "쏠렉트에서의 최근 검색어를 저장하는 API 입니다.")
+  @PostMapping("/search/recent")
+  public ResponseEntity<SuccessResponse<Void>> addRecentSearch(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails,
+      @Valid @RequestBody KeywordRequest keywordRequest) {
+
+    sollectService.addRecentSearch(customUserDetails.getUsername(), keywordRequest.keyword());
+
+    return ResponseEntity.status(201)
+        .body(
+            SuccessResponse.successWithNoData(keywordRequest.keyword() + " 검색어가 최근 목록에 반영 되었습니다."));
+  }
+
+  @Operation(summary = "쏠렉트 최근 검색어 조회 API", description = "쏠렉트에서의 최근 검색어를 조회하는 API 입니다.")
+  @GetMapping("/search/recent")
+  public ResponseEntity<SuccessResponse<List<String>>> getRecentSearch(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+    List<String> recentSearch = sollectService.getRecentSearch(customUserDetails.getUsername());
+
+    return ResponseEntity.ok(SuccessResponse.successWithData(recentSearch));
+  }
+
+  @Operation(summary = "쏠렉트 최근 검색어 삭제 API", description = "쏠렉트에서의 최근 검색어를 삭제하는 API 입니다.")
+  @DeleteMapping("/search/recent/{keyword}")
+  public ResponseEntity<SuccessResponse<Void>> deleteRecentSearch(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable String keyword) {
+
+    sollectService.deleteRecentSearch(customUserDetails.getUsername(), keyword);
+
+    return ResponseEntity.ok(SuccessResponse.successWithNoData(keyword + " 검색어 삭제 성공"));
   }
 }
