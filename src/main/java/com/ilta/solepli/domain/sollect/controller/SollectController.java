@@ -72,7 +72,7 @@ public class SollectController {
   @PutMapping("/{id}")
   public ResponseEntity<SuccessResponse<Void>> updateSollect(
       @PathVariable Long id,
-      @RequestBody SollectUpdateRequest request,
+      @Valid @RequestBody SollectUpdateRequest request,
       @AuthenticationPrincipal CustomUserDetails userDetails) {
     sollectService.updateSollect(id, request, userDetails.user());
     return ResponseEntity.ok().body(SuccessResponse.successWithNoData("쏠렉트 수정 성공"));
