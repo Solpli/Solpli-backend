@@ -2,6 +2,7 @@ package com.ilta.solepli.domain.solmark.sollect.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -61,5 +62,15 @@ public class SolmarkSollectController {
         solmarkSollectService.getMySollects(userDetails.user(), page, size);
 
     return ResponseEntity.ok().body(SuccessResponse.successWithData(solmarkSollects));
+  }
+
+  @Operation(summary = "쏠마크 - 쏠렉트 삭제 API", description = "쏠마크에 쏠렉트를 추가하는 API입니다. 쏠렉트의 id를 보내주세요.")
+  @DeleteMapping("/{id}")
+  public ResponseEntity<SuccessResponse<Void>> deleteSollect(
+      @AuthenticationPrincipal CustomUserDetails userDetails, @NotNull @PathVariable Long id) {
+
+    solmarkSollectService.deleteSollect(userDetails.user(), id);
+
+    return ResponseEntity.ok().body(SuccessResponse.successWithNoData("쏠마크에서 쏠렉트 삭제 성공"));
   }
 }

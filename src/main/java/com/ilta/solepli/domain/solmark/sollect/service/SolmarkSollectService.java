@@ -92,6 +92,21 @@ public class SolmarkSollectService {
     return SolmarkSollectResponse.builder().contents(convertedContents).pageInfo(info).build();
   }
 
+  @Transactional
+  public void deleteSollect(User user, Long id) {
+    Sollect sollect =
+        sollectRepository
+            .findById(id)
+            .orElseThrow(() -> new CustomException(ErrorCode.SOLLECT_NOT_FOUND));
+
+    SolmarkSollect solmarkSollect =
+        solmarkSollectRepository
+            .findBySollectAndUser(sollect, user)
+            .orElseThrow(() -> new CustomException(ErrorCode.SOLMARK_SOLLECT_NOT_FOUND));
+
+    solmarkSollectRepository.delete(solmarkSollect);
+  }
+
   private List<SolmarkSollectResponse.SollectSearchContent> toResponseContent(
       List<SolmarkSollectResponseContent> contents) {
     return contents.stream()
