@@ -82,6 +82,7 @@ public class SollectRepositoryImpl implements SollectRepositoryCustom {
         queryFactory
             .select(
                 new QSollectSearchResponseContent(
+                    sollect.id,
                     sollectContent.imageUrl,
                     sollect.title,
                     firstPlaceInfo.district,
