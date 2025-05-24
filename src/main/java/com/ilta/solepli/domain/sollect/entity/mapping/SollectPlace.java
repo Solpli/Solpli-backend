@@ -41,5 +41,5 @@ public class SollectPlace extends Timestamped {
   @OnDelete(action = OnDeleteAction.CASCADE)
   private Place place;
 
-  private int seq;
+  private Integer seq;
 }
