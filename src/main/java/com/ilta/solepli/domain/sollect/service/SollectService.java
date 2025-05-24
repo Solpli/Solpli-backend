@@ -7,6 +7,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import java.util.stream.IntStream;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +25,8 @@ import com.ilta.solepli.domain.place.repository.PlaceRepository;
 import com.ilta.solepli.domain.sollect.dto.request.SollectCreateRequest;
 import com.ilta.solepli.domain.sollect.dto.request.SollectUpdateRequest;
 import com.ilta.solepli.domain.sollect.dto.response.SollectCreateResponse;
+import com.ilta.solepli.domain.sollect.dto.response.SollectSearchResponse;
+import com.ilta.solepli.domain.sollect.dto.response.SollectSearchResponse.PageInfo;
 import com.ilta.solepli.domain.sollect.entity.ContentType;
 import com.ilta.solepli.domain.sollect.entity.Sollect;
 import com.ilta.solepli.domain.sollect.entity.SollectContent;
@@ -26,6 +34,7 @@ import com.ilta.solepli.domain.sollect.entity.mapping.SollectPlace;
 import com.ilta.solepli.domain.sollect.repository.SollectContentRepository;
 import com.ilta.solepli.domain.sollect.repository.SollectPlaceRepository;
 import com.ilta.solepli.domain.sollect.repository.SollectRepository;
+import com.ilta.solepli.domain.sollect.repository.SollectRepositoryCustom;
 import com.ilta.solepli.domain.user.entity.User;
 import com.ilta.solepli.global.exception.CustomException;
 import com.ilta.solepli.global.exception.ErrorCode;
@@ -41,6 +50,7 @@ public class SollectService {
   private final PlaceRepository placeRepository;
   private final S3Service s3Service;
   private final RedisTemplate<String, Object> redisTemplate;
+  private final SollectRepositoryCustom sollectRepositoryCustom;
 
   private static final String RECENT_SEARCH_PREFIX = "sollect_recent_search:";
   private static final int MAX_RECENT_SEARCH = 10;
@@ -156,16 +166,19 @@ public class SollectService {
 
     // Sollect Place 저장
     List<SollectPlace> sollectPlaces =
-        request.placeIds().stream()
-            .map(
-                placeId -> {
-                  Place place =
-                      placeRepository
-                          .findById(placeId)
+        IntStream.range(0, request.placeIds().size())
+                .mapToObj(i -> {
+                  Long placeId = request.placeIds().get(i);
+                  Place place = placeRepository.findById(placeId)
                           .orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_EXISTS));
-                  return SollectPlace.builder().sollect(sollect).place(place).build();
+
+                  return SollectPlace.builder()
+                          .sollect(sollect)
+                          .place(place)
+                          .seq(i)
+                          .build();
                 })
-            .collect(Collectors.toList());
+                .collect(Collectors.toList());
 
     sollectPlaceRepository.saveAll(sollectPlaces);
 
@@ -253,6 +266,40 @@ public class SollectService {
     return range.stream().map(Object::toString).toList();
   }
 
+  public SollectSearchResponse getSearchContents(
+      int page, int size, String keyword, String category) {
+    // 페이징을 위한 Pageable 객체
+    Pageable pageable = PageRequest.of(page, size, Sort.by(Direction.DESC, "createdAt"));
+
+    String parsedKeyword = null;
+    if (keyword != null) {
+      parsedKeyword = keyword;
+    }
+
+    String parsedCategory = null;
+    if (category != null) {
+      parsedCategory = category;
+    }
+
+    Page<Sollect> sollects =
+        sollectRepositoryCustom.searchSollectByKeywordOrCategory(
+            pageable, parsedKeyword, parsedCategory);
+
+    PageInfo info =
+        PageInfo.builder()
+            .page(sollects.getNumber())
+            .size(sollects.getSize())
+            .totalPages(sollects.getTotalPages())
+            .totalElements(sollects.getTotalElements())
+            .isLast(sollects.isLast())
+            .build();
+
+    List<Sollect> result = sollects.getContent();
+
+        return SollectSearchResponse.builder().contents().pageInfo(info).build();
+    return null;
+  }
+
   /**
    * 사용자의 특정 검색어를 ZSET에서 제거한다. 존재하지 않는 키워드면 404 예외를 던진다.
    *
@@ -296,5 +343,40 @@ public class SollectService {
    */
   private String keyBuild(String userId) {
     return RECENT_SEARCH_PREFIX + userId;
+  }
+
+  private List<SollectSearchResponse.SollectSearchContent> getSearchContent(
+      List<Sollect> sollects) {
+    List<SollectSearchResponse.SollectSearchContent> result = new ArrayList<>();
+
+    for (Sollect sollect : sollects) {
+      // 썸네일: seq == 0 인 SollectContent의 imageUrl
+      String thumbnailImage =
+          sollect.getSollectContents().stream()
+              .filter(content -> content.getSeq() == 0)
+              .findFirst()
+              .map(SollectContent::getImageUrl)
+              .orElse(null);
+
+      // 첫 번째 Place 기준 지역 정보
+      Place firstPlace =
+          sollect.getSollectPlaces().stream().findFirst().map(SollectPlace::getPlace).orElse(null);
+
+      String district = firstPlace != null ? firstPlace.getDistrict() : null;
+      String neighborhood = firstPlace != null ? firstPlace.getNeighborhood() : null;
+
+      // 응답 DTO 생성
+      SollectSearchResponse.SollectSearchContent content =
+          SollectSearchResponse.SollectSearchContent.builder()
+              .thumbnailImage(thumbnailImage)
+              .title(sollect.getTitle())
+              .district(district)
+              .neighborhood(neighborhood)
+              .build();
+
+      result.add(content);
+    }
+
+    return result;
   }
 }
