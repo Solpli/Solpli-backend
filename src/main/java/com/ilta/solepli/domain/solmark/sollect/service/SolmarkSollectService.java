@@ -68,6 +68,30 @@ public class SolmarkSollectService {
     return SolmarkSollectResponse.builder().contents(convertedContents).pageInfo(info).build();
   }
 
+  @Transactional(readOnly = true)
+  public SolmarkSollectResponse getMySollects(User user, int page, int size) {
+    Pageable pageable = PageRequest.of(page, size, Sort.by(Direction.DESC, "createdAt"));
+
+    List<Long> sollectIds = sollectRepository.findSollectIdsByUser(user);
+
+    Page<SolmarkSollectResponseContent> sollects =
+        sollectRepositoryCustom.searchBySolmarkSollect(pageable, sollectIds);
+
+    PageInfo info =
+        PageInfo.builder()
+            .page(sollects.getNumber())
+            .size(sollects.getSize())
+            .totalPages(sollects.getTotalPages())
+            .totalElements(sollects.getTotalElements())
+            .isLast(sollects.isLast())
+            .build();
+
+    List<SolmarkSollectResponse.SollectSearchContent> convertedContents =
+        toResponseContent(sollects.getContent());
+
+    return SolmarkSollectResponse.builder().contents(convertedContents).pageInfo(info).build();
+  }
+
   private List<SolmarkSollectResponse.SollectSearchContent> toResponseContent(
       List<SolmarkSollectResponseContent> contents) {
     return contents.stream()

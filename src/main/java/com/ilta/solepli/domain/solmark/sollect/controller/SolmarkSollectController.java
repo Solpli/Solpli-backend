@@ -39,13 +39,26 @@ public class SolmarkSollectController {
 
   @Operation(summary = "쏠마크 - 쏠렉트 조회 API", description = "쏠마크의 쏠렉트를 조회하는 API입니다.")
   @GetMapping
-  public ResponseEntity<SuccessResponse<SolmarkSollectResponse>> createSollect(
+  public ResponseEntity<SuccessResponse<SolmarkSollectResponse>> getSollects(
       @AuthenticationPrincipal CustomUserDetails userDetails,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "6") int size) {
 
     SolmarkSollectResponse solmarkSollects =
         solmarkSollectService.getSolmarkSollects(userDetails.user(), page, size);
+
+    return ResponseEntity.ok().body(SuccessResponse.successWithData(solmarkSollects));
+  }
+
+  @Operation(summary = "쏠마크 - 나의 쏠렉트 조회 API", description = "나의 쏠렉트를 조회하는 API입니다.")
+  @GetMapping("/my")
+  public ResponseEntity<SuccessResponse<SolmarkSollectResponse>> getMySollects(
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "6") int size) {
+
+    SolmarkSollectResponse solmarkSollects =
+        solmarkSollectService.getMySollects(userDetails.user(), page, size);
 
     return ResponseEntity.ok().body(SuccessResponse.successWithData(solmarkSollects));
   }
