@@ -66,6 +66,14 @@ dependencies {
 
 	// Redis
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+	// QueryDSL core
+	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+
+	// APT 설정 (Annotation Processor)
+	annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jakarta'
+	annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
+	annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
 }
 
 // Spotless 설정 (코드 스타일 자동 정리 도구)

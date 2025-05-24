@@ -40,4 +40,6 @@ public class SollectPlace extends Timestamped {
   @JoinColumn(name = "place_id")
   @OnDelete(action = OnDeleteAction.CASCADE)
   private Place place;
+
+  private Integer seq;
 }
