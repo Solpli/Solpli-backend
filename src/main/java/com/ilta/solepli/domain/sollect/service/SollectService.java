@@ -2,6 +2,7 @@ package com.ilta.solepli.domain.sollect.service;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -36,6 +37,7 @@ import com.ilta.solepli.domain.sollect.repository.SollectContentRepository;
 import com.ilta.solepli.domain.sollect.repository.SollectPlaceRepository;
 import com.ilta.solepli.domain.sollect.repository.SollectRepository;
 import com.ilta.solepli.domain.sollect.repository.SollectRepositoryCustom;
+import com.ilta.solepli.domain.solmark.sollect.repository.SolmarkSollectRepository;
 import com.ilta.solepli.domain.user.entity.User;
 import com.ilta.solepli.global.exception.CustomException;
 import com.ilta.solepli.global.exception.ErrorCode;
@@ -52,6 +54,7 @@ public class SollectService {
   private final S3Service s3Service;
   private final RedisTemplate<String, Object> redisTemplate;
   private final SollectRepositoryCustom sollectRepositoryCustom;
+  private final SolmarkSollectRepository solmarkSollectRepository;
 
   private static final String RECENT_SEARCH_PREFIX = "sollect_recent_search:";
   private static final int MAX_RECENT_SEARCH = 10;
@@ -268,29 +271,6 @@ public class SollectService {
     return range.stream().map(Object::toString).toList();
   }
 
-  public SollectSearchResponse getSearchContents(
-      int page, int size, String keyword, String category) {
-    // 페이징을 위한 Pageable 객체
-    Pageable pageable = PageRequest.of(page, size, Sort.by(Direction.DESC, "createdAt"));
-
-    Page<SollectSearchResponseContent> sollects =
-        sollectRepositoryCustom.searchSollectByKeywordOrCategory(pageable, keyword, category);
-
-    PageInfo info =
-        PageInfo.builder()
-            .page(sollects.getNumber())
-            .size(sollects.getSize())
-            .totalPages(sollects.getTotalPages())
-            .totalElements(sollects.getTotalElements())
-            .isLast(sollects.isLast())
-            .build();
-
-    List<SollectSearchResponse.SollectSearchContent> convertedContents =
-        toResponseContent(sollects.getContent());
-
-    return SollectSearchResponse.builder().contents(convertedContents).pageInfo(info).build();
-  }
-
   /**
    * 사용자의 특정 검색어를 ZSET에서 제거한다. 존재하지 않는 키워드면 404 예외를 던진다.
    *
@@ -306,6 +286,34 @@ public class SollectService {
     if (removed == null || removed == 0) {
       throw new CustomException(ErrorCode.RECENT_SEARCH_NOT_FOUND);
     }
+  }
+
+  public SollectSearchResponse getSearchContents(
+      User user, int page, int size, String keyword, String category) {
+    // 페이징을 위한 Pageable 객체
+    Pageable pageable = PageRequest.of(page, size, Sort.by(Direction.DESC, "createdAt"));
+
+    Page<SollectSearchResponseContent> sollects =
+        sollectRepositoryCustom.searchSollectByKeywordOrCategory(pageable, keyword, category);
+
+    // 북마크된 ID 조회
+    Set<Long> markedSet =
+        (user == null)
+            ? Collections.emptySet()
+            : new HashSet<>(solmarkSollectRepository.findSollectIdsByUser(user));
+    PageInfo info =
+        PageInfo.builder()
+            .page(sollects.getNumber())
+            .size(sollects.getSize())
+            .totalPages(sollects.getTotalPages())
+            .totalElements(sollects.getTotalElements())
+            .isLast(sollects.isLast())
+            .build();
+
+    List<SollectSearchResponse.SollectSearchContent> convertedContents =
+        toResponseContent(sollects.getContent(), markedSet);
+
+    return SollectSearchResponse.builder().contents(convertedContents).pageInfo(info).build();
   }
 
   private SollectContent findImage(List<SollectContent> sollectContents, String filename) {
@@ -337,15 +345,17 @@ public class SollectService {
   }
 
   private List<SollectSearchResponse.SollectSearchContent> toResponseContent(
-      List<SollectSearchResponseContent> contents) {
+      List<SollectSearchResponseContent> contents, Set<Long> markedSollectIds) {
     return contents.stream()
         .map(
             content ->
                 SollectSearchResponse.SollectSearchContent.builder()
+                    .sollectId(content.sollectId())
                     .thumbnailImage(content.thumbnailImage())
                     .title(content.title())
                     .district(content.district())
                     .neighborhood(content.neighborhood())
+                    .isMarked(markedSollectIds.contains(content.sollectId()))
                     .build())
         .toList();
   }
