@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import java.util.stream.IntStream;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 
 import com.ilta.solepli.domain.place.entity.Place;
 import com.ilta.solepli.domain.place.repository.PlaceRepository;
+import com.ilta.solepli.domain.sollect.dto.SollectSearchResponseContent;
 import com.ilta.solepli.domain.sollect.dto.request.SollectCreateRequest;
 import com.ilta.solepli.domain.sollect.dto.request.SollectUpdateRequest;
 import com.ilta.solepli.domain.sollect.dto.response.SollectCreateResponse;
@@ -66,14 +67,16 @@ public class SollectService {
 
     // Sollect Place 저장
     List<SollectPlace> sollectPlaces =
-        request.placeIds().stream()
-            .map(
-                placeId -> {
+        IntStream.range(0, request.placeIds().size())
+            .mapToObj(
+                i -> {
+                  Long placeId = request.placeIds().get(i);
                   Place place =
                       placeRepository
                           .findById(placeId)
                           .orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_EXISTS));
-                  return SollectPlace.builder().sollect(sollect).place(place).build();
+
+                  return SollectPlace.builder().sollect(sollect).place(place).seq(i).build();
                 })
             .collect(Collectors.toList());
 
@@ -167,18 +170,17 @@ public class SollectService {
     // Sollect Place 저장
     List<SollectPlace> sollectPlaces =
         IntStream.range(0, request.placeIds().size())
-                .mapToObj(i -> {
+            .mapToObj(
+                i -> {
                   Long placeId = request.placeIds().get(i);
-                  Place place = placeRepository.findById(placeId)
+                  Place place =
+                      placeRepository
+                          .findById(placeId)
                           .orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_EXISTS));
 
-                  return SollectPlace.builder()
-                          .sollect(sollect)
-                          .place(place)
-                          .seq(i)
-                          .build();
+                  return SollectPlace.builder().sollect(sollect).place(place).seq(i).build();
                 })
-                .collect(Collectors.toList());
+            .collect(Collectors.toList());
 
     sollectPlaceRepository.saveAll(sollectPlaces);
 
@@ -271,19 +273,8 @@ public class SollectService {
     // 페이징을 위한 Pageable 객체
     Pageable pageable = PageRequest.of(page, size, Sort.by(Direction.DESC, "createdAt"));
 
-    String parsedKeyword = null;
-    if (keyword != null) {
-      parsedKeyword = keyword;
-    }
-
-    String parsedCategory = null;
-    if (category != null) {
-      parsedCategory = category;
-    }
-
-    Page<Sollect> sollects =
-        sollectRepositoryCustom.searchSollectByKeywordOrCategory(
-            pageable, parsedKeyword, parsedCategory);
+    Page<SollectSearchResponseContent> sollects =
+        sollectRepositoryCustom.searchSollectByKeywordOrCategory(pageable, keyword, category);
 
     PageInfo info =
         PageInfo.builder()
@@ -294,10 +285,10 @@ public class SollectService {
             .isLast(sollects.isLast())
             .build();
 
-    List<Sollect> result = sollects.getContent();
+    List<SollectSearchResponse.SollectSearchContent> convertedContents =
+        toResponseContent(sollects.getContent());
 
-        return SollectSearchResponse.builder().contents().pageInfo(info).build();
-    return null;
+    return SollectSearchResponse.builder().contents(convertedContents).pageInfo(info).build();
   }
 
   /**
@@ -345,38 +336,17 @@ public class SollectService {
     return RECENT_SEARCH_PREFIX + userId;
   }
 
-  private List<SollectSearchResponse.SollectSearchContent> getSearchContent(
-      List<Sollect> sollects) {
-    List<SollectSearchResponse.SollectSearchContent> result = new ArrayList<>();
-
-    for (Sollect sollect : sollects) {
-      // 썸네일: seq == 0 인 SollectContent의 imageUrl
-      String thumbnailImage =
-          sollect.getSollectContents().stream()
-              .filter(content -> content.getSeq() == 0)
-              .findFirst()
-              .map(SollectContent::getImageUrl)
-              .orElse(null);
-
-      // 첫 번째 Place 기준 지역 정보
-      Place firstPlace =
-          sollect.getSollectPlaces().stream().findFirst().map(SollectPlace::getPlace).orElse(null);
-
-      String district = firstPlace != null ? firstPlace.getDistrict() : null;
-      String neighborhood = firstPlace != null ? firstPlace.getNeighborhood() : null;
-
-      // 응답 DTO 생성
-      SollectSearchResponse.SollectSearchContent content =
-          SollectSearchResponse.SollectSearchContent.builder()
-              .thumbnailImage(thumbnailImage)
-              .title(sollect.getTitle())
-              .district(district)
-              .neighborhood(neighborhood)
-              .build();
-
-      result.add(content);
-    }
-
-    return result;
+  private List<SollectSearchResponse.SollectSearchContent> toResponseContent(
+      List<SollectSearchResponseContent> contents) {
+    return contents.stream()
+        .map(
+            content ->
+                SollectSearchResponse.SollectSearchContent.builder()
+                    .thumbnailImage(content.thumbnailImage())
+                    .title(content.title())
+                    .district(content.district())
+                    .neighborhood(content.neighborhood())
+                    .build())
+        .toList();
   }
 }

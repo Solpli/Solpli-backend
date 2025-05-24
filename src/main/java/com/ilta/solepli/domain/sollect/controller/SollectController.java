@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,6 +28,7 @@ import com.ilta.solepli.domain.sollect.dto.request.KeywordRequest;
 import com.ilta.solepli.domain.sollect.dto.request.SollectCreateRequest;
 import com.ilta.solepli.domain.sollect.dto.request.SollectUpdateRequest;
 import com.ilta.solepli.domain.sollect.dto.response.SollectCreateResponse;
+import com.ilta.solepli.domain.sollect.dto.response.SollectSearchResponse;
 import com.ilta.solepli.domain.sollect.service.SollectService;
 import com.ilta.solepli.domain.user.util.CustomUserDetails;
 import com.ilta.solepli.global.response.SuccessResponse;
@@ -119,5 +121,19 @@ public class SollectController {
     sollectService.deleteRecentSearch(customUserDetails.getUsername(), keyword);
 
     return ResponseEntity.ok(SuccessResponse.successWithNoData(keyword + " 검색어 삭제 성공"));
+  }
+
+  @Operation(summary = "쏠렉트 검색 API", description = "키워드 + 카테고리명으로 쏠렉트를 검색하는 API 입니다.")
+  @GetMapping("/search")
+  public ResponseEntity<SuccessResponse<SollectSearchResponse>> searchSollect(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "6") int size,
+      @RequestParam(required = false) String keyword,
+      @RequestParam(required = false) String category) {
+
+    SollectSearchResponse searchContents =
+        sollectService.getSearchContents(page, size, keyword, category);
+
+    return ResponseEntity.ok(SuccessResponse.successWithData(searchContents));
   }
 }
