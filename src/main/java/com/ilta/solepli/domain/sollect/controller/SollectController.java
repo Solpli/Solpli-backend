@@ -6,11 +6,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,9 +24,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import com.ilta.solepli.domain.sollect.dto.request.KeywordRequest;
 import com.ilta.solepli.domain.sollect.dto.request.SollectCreateRequest;
 import com.ilta.solepli.domain.sollect.dto.request.SollectUpdateRequest;
 import com.ilta.solepli.domain.sollect.dto.response.SollectCreateResponse;
+import com.ilta.solepli.domain.sollect.dto.response.SollectSearchResponse;
 import com.ilta.solepli.domain.sollect.service.SollectService;
 import com.ilta.solepli.domain.user.util.CustomUserDetails;
 import com.ilta.solepli.global.response.SuccessResponse;
@@ -72,7 +76,7 @@ public class SollectController {
   @PutMapping("/{id}")
   public ResponseEntity<SuccessResponse<Void>> updateSollect(
       @PathVariable Long id,
-      @RequestBody SollectUpdateRequest request,
+      @Valid @RequestBody SollectUpdateRequest request,
       @AuthenticationPrincipal CustomUserDetails userDetails) {
     sollectService.updateSollect(id, request, userDetails.user());
     return ResponseEntity.ok().body(SuccessResponse.successWithNoData("쏠렉트 수정 성공"));
@@ -84,5 +88,52 @@ public class SollectController {
       @PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
     sollectService.deleteSollect(id, userDetails.user());
     return ResponseEntity.ok().body(SuccessResponse.successWithNoData("쏠렉트 삭제 성공"));
+  }
+
+  @Operation(summary = "쏠렉트 최근 검색어 저장 API", description = "쏠렉트에서의 최근 검색어를 저장하는 API 입니다.")
+  @PostMapping("/search/recent")
+  public ResponseEntity<SuccessResponse<Void>> addRecentSearch(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails,
+      @Valid @RequestBody KeywordRequest keywordRequest) {
+
+    sollectService.addRecentSearch(customUserDetails.getUsername(), keywordRequest.keyword());
+
+    return ResponseEntity.status(201)
+        .body(
+            SuccessResponse.successWithNoData(keywordRequest.keyword() + " 검색어가 최근 목록에 반영 되었습니다."));
+  }
+
+  @Operation(summary = "쏠렉트 최근 검색어 조회 API", description = "쏠렉트에서의 최근 검색어를 조회하는 API 입니다.")
+  @GetMapping("/search/recent")
+  public ResponseEntity<SuccessResponse<List<String>>> getRecentSearch(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+    List<String> recentSearch = sollectService.getRecentSearch(customUserDetails.getUsername());
+
+    return ResponseEntity.ok(SuccessResponse.successWithData(recentSearch));
+  }
+
+  @Operation(summary = "쏠렉트 최근 검색어 삭제 API", description = "쏠렉트에서의 최근 검색어를 삭제하는 API 입니다.")
+  @DeleteMapping("/search/recent/{keyword}")
+  public ResponseEntity<SuccessResponse<Void>> deleteRecentSearch(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable String keyword) {
+
+    sollectService.deleteRecentSearch(customUserDetails.getUsername(), keyword);
+
+    return ResponseEntity.ok(SuccessResponse.successWithNoData(keyword + " 검색어 삭제 성공"));
+  }
+
+  @Operation(summary = "쏠렉트 검색 API", description = "키워드 + 카테고리명으로 쏠렉트를 검색하는 API 입니다.")
+  @GetMapping("/search")
+  public ResponseEntity<SuccessResponse<SollectSearchResponse>> searchSollect(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "6") int size,
+      @RequestParam(required = false) String keyword,
+      @RequestParam(required = false) String category) {
+
+    SollectSearchResponse searchContents =
+        sollectService.getSearchContents(page, size, keyword, category);
+
+    return ResponseEntity.ok(SuccessResponse.successWithData(searchContents));
   }
 }
