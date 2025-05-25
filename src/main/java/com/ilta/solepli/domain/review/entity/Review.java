@@ -26,6 +26,7 @@ import com.ilta.solepli.domain.place.entity.Place;
 import com.ilta.solepli.domain.review.entity.mapping.ReviewImage;
 import com.ilta.solepli.domain.review.entity.mapping.ReviewTag;
 import com.ilta.solepli.domain.user.entity.User;
+import com.ilta.solepli.global.entity.Timestamped;
 
 @Entity
 @Getter
@@ -33,7 +34,7 @@ import com.ilta.solepli.domain.user.entity.User;
 @AllArgsConstructor
 @Builder
 @Table(name = "reviews")
-public class Review {
+public class Review extends Timestamped {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
