@@ -48,12 +48,15 @@ public class Place extends Timestamped {
   private Double rating;
 
   @OneToMany(mappedBy = "place", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @Builder.Default
   private List<PlaceCategory> placeCategories = new ArrayList<>();
 
   @OneToMany(mappedBy = "place", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @Builder.Default
   private List<PlaceHour> placeHours = new ArrayList<>();
 
   @OneToMany(mappedBy = "place", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @Builder.Default
   private List<Review> reviews = new ArrayList<>();
 
   public void updateRating(Double rating) {
