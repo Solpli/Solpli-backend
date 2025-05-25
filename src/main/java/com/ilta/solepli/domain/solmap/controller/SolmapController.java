@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 
 import com.ilta.solepli.domain.solmap.dto.KeywordRequest;
 import com.ilta.solepli.domain.solmap.dto.PlaceSearchPreviewResponse;
-import com.ilta.solepli.domain.solmap.dto.ViewportMapMarkerResponse;
+import com.ilta.solepli.domain.solmap.dto.ViewportMapMarkerDetail;
 import com.ilta.solepli.domain.solmap.service.SolmapService;
 import com.ilta.solepli.domain.user.util.CustomUserDetails;
 import com.ilta.solepli.global.response.SuccessResponse;
@@ -28,7 +28,7 @@ public class SolmapController {
 
   @Operation(summary = "지도 화면 내 장소 마커 정보 조회 API", description = "지도 화면 내 장소 마커 정보들을 조회하는 API 입니다.")
   @GetMapping("/markers")
-  public ResponseEntity<SuccessResponse<ViewportMapMarkerResponse>> getMarkersByViewport(
+  public ResponseEntity<SuccessResponse<List<ViewportMapMarkerDetail>>> getMarkersByViewport(
       @RequestParam Double swLat,
       @RequestParam Double swLng,
       @RequestParam Double neLat,

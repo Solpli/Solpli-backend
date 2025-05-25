@@ -56,7 +56,7 @@ public class SolmapService {
   private static final int THUMBNAIL_LIMIT = 3;
 
   @Transactional(readOnly = true)
-  public ViewportMapMarkerResponse getMarkersByViewport(
+  public List<ViewportMapMarkerDetail> getMarkersByViewport(
       Double swLat, Double swLng, Double neLat, Double neLng, String category) {
 
     // 좌표, 카테고리 유효성 검증
@@ -68,17 +68,7 @@ public class SolmapService {
         placeRepository.findInViewportWithOptionalCategory(swLat, swLng, neLat, neLng, category);
 
     // 마커 관련 데이터 리스트
-    List<ViewportMapMarkerDetail> markerDetails =
-        place.stream().map(p -> toMarkerDetail(p, category)).toList();
-    // 마커 카테고리 리스트
-    List<String> categories =
-        place.stream()
-            .flatMap(p -> p.getPlaceCategories().stream())
-            .map(pc -> pc.getCategory().getName())
-            .distinct()
-            .toList();
-
-    return ViewportMapMarkerResponse.of(markerDetails, categories);
+    return place.stream().map(p1 -> toMarkerDetail(p1, category)).toList();
   }
 
   private void validViewport(Double swLat, Double swLng, Double neLat, Double neLng) {
