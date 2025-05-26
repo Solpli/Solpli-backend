@@ -1,11 +1,6 @@
 package com.ilta.solepli.domain.sollect.repository;
 
 import java.util.List;
-import java.util.Optional;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -95,42 +90,32 @@ public class SollectRepositoryImpl implements SollectRepositoryCustom {
   }
 
   @Override
-  public Page<SolmarkSollectResponseContent> searchBySolmarkSollect(
-      Pageable pageable, List<Long> sollectIds) {
+  public List<SolmarkSollectResponseContent> searchBySolmarkSollect(
+      Long cursorId, int size, List<Long> sollectIds) {
     QSollectPlace firstPlace = new QSollectPlace("firstPlace");
     QPlace firstPlaceInfo = new QPlace("firstPlaceInfo");
 
-    List<SolmarkSollectResponseContent> result =
-        queryFactory
-            .select(
-                new QSolmarkSollectResponseContent(
-                    sollect.id,
-                    sollectContent.imageUrl,
-                    sollect.title,
-                    firstPlaceInfo.district,
-                    firstPlaceInfo.neighborhood))
-            .from(sollect)
-            .join(sollect.sollectPlaces, firstPlace)
-            .on(firstPlace.seq.eq(0))
-            .join(firstPlace.place, firstPlaceInfo)
-            .join(sollect.sollectContents, sollectContent)
-            .on(sollectContent.seq.eq(0L))
-            .where(sollect.id.in(sollectIds))
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .orderBy(sollect.createdAt.desc())
-            .fetch();
+    // 커서 조건 추가
+    BooleanExpression cursorCondition = cursorLessThan(cursorId);
 
-    // 4. 전체 개수 추출
-    Long count =
-        queryFactory
-            .select(sollect.countDistinct())
-            .from(sollect)
-            .leftJoin(sollect.sollectPlaces, sollectPlace)
-            .where(sollect.id.in(sollectIds))
-            .fetchOne();
-
-    return new PageImpl<>(result, pageable, Optional.ofNullable(count).orElse(0L));
+    return queryFactory
+        .select(
+            new QSolmarkSollectResponseContent(
+                sollect.id,
+                sollectContent.imageUrl,
+                sollect.title,
+                firstPlaceInfo.district,
+                firstPlaceInfo.neighborhood))
+        .from(sollect)
+        .join(sollect.sollectPlaces, firstPlace)
+        .on(firstPlace.seq.eq(0))
+        .join(firstPlace.place, firstPlaceInfo)
+        .join(sollect.sollectContents, sollectContent)
+        .on(sollectContent.seq.eq(0L))
+        .where(sollect.id.in(sollectIds), cursorCondition)
+        .orderBy(sollect.id.desc())
+        .limit(size + 1)
+        .fetch();
   }
 
   private BooleanExpression anyMatchKeyword(String keyword) {

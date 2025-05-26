@@ -2,11 +2,6 @@ package com.ilta.solepli.domain.solmark.sollect.service;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,7 +11,6 @@ import com.ilta.solepli.domain.sollect.entity.Sollect;
 import com.ilta.solepli.domain.sollect.repository.SollectRepository;
 import com.ilta.solepli.domain.sollect.repository.SollectRepositoryCustom;
 import com.ilta.solepli.domain.solmark.sollect.dto.response.SolmarkSollectResponse;
-import com.ilta.solepli.domain.solmark.sollect.dto.response.SolmarkSollectResponse.PageInfo;
 import com.ilta.solepli.domain.solmark.sollect.dto.response.SolmarkSollectResponseContent;
 import com.ilta.solepli.domain.solmark.sollect.entity.SolmarkSollect;
 import com.ilta.solepli.domain.solmark.sollect.repository.SolmarkSollectRepository;
@@ -45,51 +39,45 @@ public class SolmarkSollectService {
   }
 
   @Transactional(readOnly = true)
-  public SolmarkSollectResponse getSolmarkSollects(User user, int page, int size) {
-    Pageable pageable = PageRequest.of(page, size, Sort.by(Direction.DESC, "createdAt"));
-
+  public SolmarkSollectResponse getSolmarkSollects(User user, Long cursorId, int size) {
     List<Long> sollectIds = solmarkSollectRepository.findSollectIdsByUser(user);
+    List<SolmarkSollectResponseContent> contents =
+        sollectRepositoryCustom.searchBySolmarkSollect(cursorId, size, sollectIds);
 
-    Page<SolmarkSollectResponseContent> sollects =
-        sollectRepositoryCustom.searchBySolmarkSollect(pageable, sollectIds);
+    boolean hasNext = contents.size() > size;
+    if (hasNext) contents.remove(size);
+    Long nextCursorId = hasNext ? contents.get(contents.size() - 1).sollectId() : null;
 
-    PageInfo info =
-        PageInfo.builder()
-            .page(sollects.getNumber())
-            .size(sollects.getSize())
-            .totalPages(sollects.getTotalPages())
-            .totalElements(sollects.getTotalElements())
-            .isLast(sollects.isLast())
-            .build();
-
-    List<SolmarkSollectResponse.SollectSearchContent> convertedContents =
-        toResponseContent(sollects.getContent());
-
-    return SolmarkSollectResponse.builder().contents(convertedContents).pageInfo(info).build();
+    List<SolmarkSollectResponse.SollectSearchContent> converted = toResponseContent(contents);
+    return SolmarkSollectResponse.builder()
+        .contents(converted)
+        .cursorInfo(
+            SolmarkSollectResponse.CursorInfo.builder()
+                .nextCursorId(nextCursorId)
+                .hasNext(hasNext)
+                .build())
+        .build();
   }
 
   @Transactional(readOnly = true)
-  public SolmarkSollectResponse getMySollects(User user, int page, int size) {
-    Pageable pageable = PageRequest.of(page, size, Sort.by(Direction.DESC, "createdAt"));
-
+  public SolmarkSollectResponse getMySollects(User user, Long cursorId, int size) {
     List<Long> sollectIds = sollectRepository.findSollectIdsByUser(user);
+    List<SolmarkSollectResponseContent> contents =
+        sollectRepositoryCustom.searchBySolmarkSollect(cursorId, size, sollectIds);
 
-    Page<SolmarkSollectResponseContent> sollects =
-        sollectRepositoryCustom.searchBySolmarkSollect(pageable, sollectIds);
+    boolean hasNext = contents.size() > size;
+    if (hasNext) contents.remove(size);
+    Long nextCursorId = hasNext ? contents.get(contents.size() - 1).sollectId() : null;
 
-    PageInfo info =
-        PageInfo.builder()
-            .page(sollects.getNumber())
-            .size(sollects.getSize())
-            .totalPages(sollects.getTotalPages())
-            .totalElements(sollects.getTotalElements())
-            .isLast(sollects.isLast())
-            .build();
-
-    List<SolmarkSollectResponse.SollectSearchContent> convertedContents =
-        toResponseContent(sollects.getContent());
-
-    return SolmarkSollectResponse.builder().contents(convertedContents).pageInfo(info).build();
+    List<SolmarkSollectResponse.SollectSearchContent> converted = toResponseContent(contents);
+    return SolmarkSollectResponse.builder()
+        .contents(converted)
+        .cursorInfo(
+            SolmarkSollectResponse.CursorInfo.builder()
+                .nextCursorId(nextCursorId)
+                .hasNext(hasNext)
+                .build())
+        .build();
   }
 
   @Transactional
