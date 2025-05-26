@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.ilta.solepli.domain.place.entity.Place;
 
-public interface PlaceRepository extends JpaRepository<Place, Long> {
+public interface PlaceRepository extends JpaRepository<Place, Long>, PlaceRepositoryCustom {
 
   @Query(
       "SELECT p "
