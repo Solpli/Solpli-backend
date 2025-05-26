@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import com.ilta.solepli.domain.place.entity.mapping.PlaceCategory;
+import com.ilta.solepli.domain.review.entity.Review;
 import com.ilta.solepli.global.entity.Timestamped;
 
 @Entity
@@ -47,10 +48,16 @@ public class Place extends Timestamped {
   private Double rating;
 
   @OneToMany(mappedBy = "place", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @Builder.Default
   private List<PlaceCategory> placeCategories = new ArrayList<>();
 
   @OneToMany(mappedBy = "place", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @Builder.Default
   private List<PlaceHour> placeHours = new ArrayList<>();
+
+  @OneToMany(mappedBy = "place", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @Builder.Default
+  private List<Review> reviews = new ArrayList<>();
 
   public void updateRating(Double rating) {
     this.rating = rating;
