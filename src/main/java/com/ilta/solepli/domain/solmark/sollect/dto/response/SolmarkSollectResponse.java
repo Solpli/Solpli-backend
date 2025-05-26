@@ -5,11 +5,11 @@ import java.util.List;
 import lombok.Builder;
 
 @Builder
-public record SolmarkSollectResponse(List<SollectSearchContent> contents, PageInfo pageInfo) {
+public record SolmarkSollectResponse(List<SollectSearchContent> contents, CursorInfo cursorInfo) {
   @Builder
   public record SollectSearchContent(
       Long sollectId, String thumbnailImage, String title, String district, String neighborhood) {}
 
   @Builder
-  public record PageInfo(int page, int size, int totalPages, long totalElements, boolean isLast) {}
+  public record CursorInfo(Long nextCursorId, boolean hasNext) {}
 }

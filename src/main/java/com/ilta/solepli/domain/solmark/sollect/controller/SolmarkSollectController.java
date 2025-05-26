@@ -42,11 +42,11 @@ public class SolmarkSollectController {
   @GetMapping
   public ResponseEntity<SuccessResponse<SolmarkSollectResponse>> getSollects(
       @AuthenticationPrincipal CustomUserDetails userDetails,
-      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(required = false) Long cursorId,
       @RequestParam(defaultValue = "6") int size) {
 
     SolmarkSollectResponse solmarkSollects =
-        solmarkSollectService.getSolmarkSollects(userDetails.user(), page, size);
+        solmarkSollectService.getSolmarkSollects(userDetails.user(), cursorId, size);
 
     return ResponseEntity.ok().body(SuccessResponse.successWithData(solmarkSollects));
   }
@@ -55,11 +55,11 @@ public class SolmarkSollectController {
   @GetMapping("/my")
   public ResponseEntity<SuccessResponse<SolmarkSollectResponse>> getMySollects(
       @AuthenticationPrincipal CustomUserDetails userDetails,
-      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(required = false) Long cursorId,
       @RequestParam(defaultValue = "6") int size) {
 
     SolmarkSollectResponse solmarkSollects =
-        solmarkSollectService.getMySollects(userDetails.user(), page, size);
+        solmarkSollectService.getMySollects(userDetails.user(), cursorId, size);
 
     return ResponseEntity.ok().body(SuccessResponse.successWithData(solmarkSollects));
   }

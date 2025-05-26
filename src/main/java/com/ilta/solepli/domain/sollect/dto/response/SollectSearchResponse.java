@@ -5,7 +5,7 @@ import java.util.List;
 import lombok.Builder;
 
 @Builder
-public record SollectSearchResponse(List<SollectSearchContent> contents, PageInfo pageInfo) {
+public record SollectSearchResponse(List<SollectSearchContent> contents, CursorInfo cursorInfo) {
   @Builder
   public record SollectSearchContent(
       Long sollectId,
@@ -16,5 +16,5 @@ public record SollectSearchResponse(List<SollectSearchContent> contents, PageInf
       Boolean isMarked) {}
 
   @Builder
-  public record PageInfo(int page, int size, int totalPages, long totalElements, boolean isLast) {}
+  public record CursorInfo(Long nextCursorId, boolean hasNext) {}
 }
