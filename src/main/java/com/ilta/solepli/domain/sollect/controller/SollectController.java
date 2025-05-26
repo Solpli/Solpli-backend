@@ -30,6 +30,7 @@ import com.ilta.solepli.domain.sollect.dto.request.SollectUpdateRequest;
 import com.ilta.solepli.domain.sollect.dto.response.SollectCreateResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectSearchResponse;
 import com.ilta.solepli.domain.sollect.service.SollectService;
+import com.ilta.solepli.domain.user.entity.User;
 import com.ilta.solepli.domain.user.util.CustomUserDetails;
 import com.ilta.solepli.global.response.SuccessResponse;
 
@@ -126,13 +127,19 @@ public class SollectController {
   @Operation(summary = "쏠렉트 검색 API", description = "키워드 + 카테고리명으로 쏠렉트를 검색하는 API 입니다.")
   @GetMapping("/search")
   public ResponseEntity<SuccessResponse<SollectSearchResponse>> searchSollect(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "6") int size,
       @RequestParam(required = false) String keyword,
       @RequestParam(required = false) String category) {
 
+    User user = null;
+    if (customUserDetails != null) {
+      user = customUserDetails.user();
+    }
+
     SollectSearchResponse searchContents =
-        sollectService.getSearchContents(page, size, keyword, category);
+        sollectService.getSearchContents(user, page, size, keyword, category);
 
     return ResponseEntity.ok(SuccessResponse.successWithData(searchContents));
   }

@@ -21,6 +21,8 @@ import com.ilta.solepli.domain.sollect.dto.SollectSearchResponseContent;
 import com.ilta.solepli.domain.sollect.entity.QSollect;
 import com.ilta.solepli.domain.sollect.entity.QSollectContent;
 import com.ilta.solepli.domain.sollect.entity.mapping.QSollectPlace;
+import com.ilta.solepli.domain.solmark.sollect.dto.response.QSolmarkSollectResponseContent;
+import com.ilta.solepli.domain.solmark.sollect.dto.response.SolmarkSollectResponseContent;
 
 @RequiredArgsConstructor
 public class SollectRepositoryImpl implements SollectRepositoryCustom {
@@ -80,6 +82,7 @@ public class SollectRepositoryImpl implements SollectRepositoryCustom {
         queryFactory
             .select(
                 new QSollectSearchResponseContent(
+                    sollect.id,
                     sollectContent.imageUrl,
                     sollect.title,
                     firstPlaceInfo.district,
@@ -101,6 +104,45 @@ public class SollectRepositoryImpl implements SollectRepositoryCustom {
             .from(sollect)
             .leftJoin(sollect.sollectPlaces, sollectPlace)
             .where(sollectCondition)
+            .fetchOne();
+
+    return new PageImpl<>(result, pageable, Optional.ofNullable(count).orElse(0L));
+  }
+
+  @Override
+  public Page<SolmarkSollectResponseContent> searchBySolmarkSollect(
+      Pageable pageable, List<Long> sollectIds) {
+    QSollectPlace firstPlace = new QSollectPlace("firstPlace");
+    QPlace firstPlaceInfo = new QPlace("firstPlaceInfo");
+
+    List<SolmarkSollectResponseContent> result =
+        queryFactory
+            .select(
+                new QSolmarkSollectResponseContent(
+                    sollect.id,
+                    sollectContent.imageUrl,
+                    sollect.title,
+                    firstPlaceInfo.district,
+                    firstPlaceInfo.neighborhood))
+            .from(sollect)
+            .join(sollect.sollectPlaces, firstPlace)
+            .on(firstPlace.seq.eq(0))
+            .join(firstPlace.place, firstPlaceInfo)
+            .join(sollect.sollectContents, sollectContent)
+            .on(sollectContent.seq.eq(0L))
+            .where(sollect.id.in(sollectIds))
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .orderBy(sollect.createdAt.desc())
+            .fetch();
+
+    // 4. 전체 개수 추출
+    Long count =
+        queryFactory
+            .select(sollect.countDistinct())
+            .from(sollect)
+            .leftJoin(sollect.sollectPlaces, sollectPlace)
+            .where(sollect.id.in(sollectIds))
             .fetchOne();
 
     return new PageImpl<>(result, pageable, Optional.ofNullable(count).orElse(0L));
