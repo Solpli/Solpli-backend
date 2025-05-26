@@ -9,11 +9,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +23,6 @@ import com.ilta.solepli.domain.sollect.dto.request.SollectCreateRequest;
 import com.ilta.solepli.domain.sollect.dto.request.SollectUpdateRequest;
 import com.ilta.solepli.domain.sollect.dto.response.SollectCreateResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectSearchResponse;
-import com.ilta.solepli.domain.sollect.dto.response.SollectSearchResponse.PageInfo;
 import com.ilta.solepli.domain.sollect.entity.ContentType;
 import com.ilta.solepli.domain.sollect.entity.Sollect;
 import com.ilta.solepli.domain.sollect.entity.SollectContent;
@@ -288,32 +282,34 @@ public class SollectService {
     }
   }
 
+  @Transactional(readOnly = true)
   public SollectSearchResponse getSearchContents(
-      User user, int page, int size, String keyword, String category) {
-    // 페이징을 위한 Pageable 객체
-    Pageable pageable = PageRequest.of(page, size, Sort.by(Direction.DESC, "createdAt"));
+      User user, Long cursorId, int size, String keyword, String category) {
 
-    Page<SollectSearchResponseContent> sollects =
-        sollectRepositoryCustom.searchSollectByKeywordOrCategory(pageable, keyword, category);
+    List<SollectSearchResponseContent> rawContents =
+        sollectRepositoryCustom.searchSollectByKeywordOrCategory(cursorId, size, keyword, category);
 
-    // 북마크된 ID 조회
+    boolean hasNext = rawContents.size() > size;
+    if (hasNext) rawContents.remove(size); // 커서 페이징이므로 초과 1개 제거
+
     Set<Long> markedSet =
         (user == null)
             ? Collections.emptySet()
             : new HashSet<>(solmarkSollectRepository.findSollectIdsByUser(user));
-    PageInfo info =
-        PageInfo.builder()
-            .page(sollects.getNumber())
-            .size(sollects.getSize())
-            .totalPages(sollects.getTotalPages())
-            .totalElements(sollects.getTotalElements())
-            .isLast(sollects.isLast())
-            .build();
 
-    List<SollectSearchResponse.SollectSearchContent> convertedContents =
-        toResponseContent(sollects.getContent(), markedSet);
+    List<SollectSearchResponse.SollectSearchContent> converted =
+        toResponseContent(rawContents, markedSet);
 
-    return SollectSearchResponse.builder().contents(convertedContents).pageInfo(info).build();
+    Long nextCursorId = hasNext ? converted.get(converted.size() - 1).sollectId() : null;
+
+    return SollectSearchResponse.builder()
+        .contents(converted)
+        .cursorInfo(
+            SollectSearchResponse.CursorInfo.builder()
+                .nextCursorId(nextCursorId)
+                .hasNext(hasNext)
+                .build())
+        .build();
   }
 
   private SollectContent findImage(List<SollectContent> sollectContents, String filename) {

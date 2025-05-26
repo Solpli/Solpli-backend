@@ -11,8 +11,8 @@ import com.ilta.solepli.domain.solmark.sollect.dto.response.SolmarkSollectRespon
 
 @Repository
 public interface SollectRepositoryCustom {
-  Page<SollectSearchResponseContent> searchSollectByKeywordOrCategory(
-      Pageable pageable, String parsedKeyword, String parsedCategory);
+  List<SollectSearchResponseContent> searchSollectByKeywordOrCategory(
+      Long cursorId, int size, String parsedKeyword, String parsedCategory);
 
   Page<SolmarkSollectResponseContent> searchBySolmarkSollect(
       Pageable pageable, List<Long> sollectIds);

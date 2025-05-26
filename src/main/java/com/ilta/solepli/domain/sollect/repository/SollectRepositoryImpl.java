@@ -8,7 +8,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -37,8 +36,8 @@ public class SollectRepositoryImpl implements SollectRepositoryCustom {
   QCategory category = QCategory.category;
 
   @Override
-  public Page<SollectSearchResponseContent> searchSollectByKeywordOrCategory(
-      Pageable pageable, String parsedKeyword, String parsedCategory) {
+  public List<SollectSearchResponseContent> searchSollectByKeywordOrCategory(
+      Long cursorId, int size, String parsedKeyword, String parsedCategory) {
 
     // 1. 키워드 또는 카테고리에 해당하는 Place ID 추출
     List<Long> placeIds =
@@ -50,63 +49,49 @@ public class SollectRepositoryImpl implements SollectRepositoryCustom {
             .where(anyMatchKeyword(parsedKeyword), matchCategory(parsedCategory))
             .fetch();
 
-    // 2. Sollect ID 추출 (title OR place 조건 만족)
     BooleanBuilder sollectCondition = new BooleanBuilder();
-    BooleanExpression titleCondition = matchSollectTitle(parsedKeyword);
-    BooleanExpression placeCondition =
-        placeIds.isEmpty() ? null : sollectPlace.place.id.in(placeIds);
+    BooleanExpression titleCond = matchSollectTitle(parsedKeyword);
+    BooleanExpression placeCond = placeIds.isEmpty() ? null : sollectPlace.place.id.in(placeIds);
+    if (titleCond != null) sollectCondition.or(titleCond);
+    if (placeCond != null) sollectCondition.or(placeCond);
 
-    if (titleCondition != null) sollectCondition.or(titleCondition);
-    if (placeCondition != null) sollectCondition.or(placeCondition);
+    // 커서 조건 추가
+    BooleanExpression cursorCondition = cursorLessThan(cursorId);
+    if (cursorCondition != null) sollectCondition.and(cursorCondition);
 
-    List<Tuple> sollectTuples =
+    // ID 추출
+    List<Long> sollectIds =
         queryFactory
-            .select(sollect.id, sollect.createdAt)
+            .select(sollect.id)
             .from(sollect)
             .leftJoin(sollect.sollectPlaces, sollectPlace)
             .where(sollectCondition)
             .distinct()
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .orderBy(sollect.createdAt.desc())
+            .orderBy(sollect.id.desc())
+            .limit(size + 1)
             .fetch();
 
-    // ID만 추출
-    List<Long> sollectIds = sollectTuples.stream().map(tuple -> tuple.get(sollect.id)).toList();
-
-    // 3. DTO 추출 (대표 장소, 대표 콘텐츠)
+    // DTO 반환
     QSollectPlace firstPlace = new QSollectPlace("firstPlace");
     QPlace firstPlaceInfo = new QPlace("firstPlaceInfo");
 
-    List<SollectSearchResponseContent> result =
-        queryFactory
-            .select(
-                new QSollectSearchResponseContent(
-                    sollect.id,
-                    sollectContent.imageUrl,
-                    sollect.title,
-                    firstPlaceInfo.district,
-                    firstPlaceInfo.neighborhood))
-            .from(sollect)
-            .join(sollect.sollectPlaces, firstPlace)
-            .on(firstPlace.seq.eq(0))
-            .join(firstPlace.place, firstPlaceInfo)
-            .join(sollect.sollectContents, sollectContent)
-            .on(sollectContent.seq.eq(0L))
-            .where(sollect.id.in(sollectIds))
-            .orderBy(sollect.createdAt.desc())
-            .fetch();
-
-    // 4. 전체 개수 추출
-    Long count =
-        queryFactory
-            .select(sollect.countDistinct())
-            .from(sollect)
-            .leftJoin(sollect.sollectPlaces, sollectPlace)
-            .where(sollectCondition)
-            .fetchOne();
-
-    return new PageImpl<>(result, pageable, Optional.ofNullable(count).orElse(0L));
+    return queryFactory
+        .select(
+            new QSollectSearchResponseContent(
+                sollect.id,
+                sollectContent.imageUrl,
+                sollect.title,
+                firstPlaceInfo.district,
+                firstPlaceInfo.neighborhood))
+        .from(sollect)
+        .join(sollect.sollectPlaces, firstPlace)
+        .on(firstPlace.seq.eq(0))
+        .join(firstPlace.place, firstPlaceInfo)
+        .join(sollect.sollectContents, sollectContent)
+        .on(sollectContent.seq.eq(0L))
+        .where(sollect.id.in(sollectIds))
+        .orderBy(sollect.id.desc())
+        .fetch();
   }
 
   @Override
@@ -165,5 +150,9 @@ public class SollectRepositoryImpl implements SollectRepositoryCustom {
   private BooleanExpression matchSollectTitle(String keyword) {
     if (keyword == null || keyword.isBlank()) return null;
     return sollect.title.containsIgnoreCase(keyword);
+  }
+
+  private BooleanExpression cursorLessThan(Long cursorId) {
+    return (cursorId != null) ? sollect.id.lt(cursorId) : null;
   }
 }

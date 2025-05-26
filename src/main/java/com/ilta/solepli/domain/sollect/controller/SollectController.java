@@ -128,7 +128,7 @@ public class SollectController {
   @GetMapping("/search")
   public ResponseEntity<SuccessResponse<SollectSearchResponse>> searchSollect(
       @AuthenticationPrincipal CustomUserDetails customUserDetails,
-      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(required = false) Long cursorId,
       @RequestParam(defaultValue = "6") int size,
       @RequestParam(required = false) String keyword,
       @RequestParam(required = false) String category) {
@@ -139,7 +139,7 @@ public class SollectController {
     }
 
     SollectSearchResponse searchContents =
-        sollectService.getSearchContents(user, page, size, keyword, category);
+        sollectService.getSearchContents(user, cursorId, size, keyword, category);
 
     return ResponseEntity.ok(SuccessResponse.successWithData(searchContents));
   }
