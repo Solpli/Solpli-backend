@@ -1,7 +1,7 @@
 package com.ilta.solepli.domain.solmap.service;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import static com.ilta.solepli.global.util.OpenStatusUtil.getOpenStatus;
+
 import java.util.*;
 
 import org.springframework.data.redis.core.RedisTemplate;
@@ -18,18 +18,13 @@ import lombok.extern.slf4j.Slf4j;
 import com.ilta.solepli.domain.category.entity.QCategory;
 import com.ilta.solepli.domain.category.repository.CategoryRepository;
 import com.ilta.solepli.domain.place.entity.Place;
-import com.ilta.solepli.domain.place.entity.PlaceHour;
 import com.ilta.solepli.domain.place.entity.QPlace;
 import com.ilta.solepli.domain.place.entity.QPlaceHour;
 import com.ilta.solepli.domain.place.entity.mapping.PlaceCategory;
 import com.ilta.solepli.domain.place.entity.mapping.QPlaceCategory;
 import com.ilta.solepli.domain.place.repository.PlaceRepository;
-import com.ilta.solepli.domain.review.entity.QReview;
-import com.ilta.solepli.domain.review.entity.Review;
-import com.ilta.solepli.domain.review.entity.mapping.QReviewImage;
-import com.ilta.solepli.domain.review.entity.mapping.QReviewTag;
-import com.ilta.solepli.domain.review.entity.mapping.ReviewImage;
 import com.ilta.solepli.domain.solmap.dto.*;
+import com.ilta.solepli.global.dto.OpenStatus;
 import com.ilta.solepli.global.exception.CustomException;
 import com.ilta.solepli.global.exception.ErrorCode;
 
@@ -45,9 +40,6 @@ public class SolmapService {
   private final QPlace p = QPlace.place;
   private final QPlaceCategory pc = QPlaceCategory.placeCategory;
   private final QCategory c = QCategory.category;
-  private final QReview r = QReview.review;
-  private final QReviewTag rt = QReviewTag.reviewTag;
-  private final QReviewImage ri = QReviewImage.reviewImage;
   private final QPlaceHour ph = QPlaceHour.placeHour;
 
   private static final String RECENT_SEARCH_PREFIX = "solmap_recent_search:";
@@ -219,10 +211,13 @@ public class SolmapService {
             .limit(limit) // limit개만 결과로 반환
             .map(
                 p -> {
-                  List<String> topTagsForPlace = getTopTagsForPlace(p.getId(), TAG_LIMIT);
-                  List<String> reviewThumbnails = getReviewThumbnails(p.getId(), THUMBNAIL_LIMIT);
+                  List<String> topTagsForPlace =
+                      placeRepository.getTopTagsForPlace(p.getId(), TAG_LIMIT);
+                  List<String> reviewThumbnails =
+                      placeRepository.getReviewThumbnails(p.getId(), THUMBNAIL_LIMIT);
                   OpenStatus openStatus = getOpenStatus(p);
-                  Integer isSoloRecommendedPercent = getRecommendationPercent(p.getId());
+                  Integer isSoloRecommendedPercent =
+                      placeRepository.getRecommendationPercent(p.getId());
 
                   return PlacePreviewDetail.builder()
                       .id(p.getId())
@@ -296,75 +291,5 @@ public class SolmapService {
     }
 
     return distance.gt(cursorDist).or(distance.eq(cursorDist).and(p.id.gt(cursorId)));
-  }
-
-  // 장소별 최다 리뷰 태그 n개 조회
-  private List<String> getTopTagsForPlace(Long placeId, int limit) {
-    return jpaQueryFactory
-        .select(rt.name)
-        .from(rt)
-        .join(rt.review, r)
-        .where(rt.review.place.id.eq(placeId))
-        .groupBy(rt.name)
-        .orderBy(rt.id.count().desc(), rt.name.asc())
-        .limit(limit)
-        .fetch();
-  }
-
-  // 장소별 최신 리뷰의 썸네일 이미지 n개 조회
-  private List<String> getReviewThumbnails(Long placeId, int limit) {
-    List<Review> reviews =
-        jpaQueryFactory
-            .selectFrom(r)
-            .distinct()
-            .join(r.reviewImages, ri)
-            .where(r.place.id.eq(placeId))
-            .orderBy(r.createdAt.desc())
-            .limit(limit)
-            .fetch();
-
-    return reviews.stream()
-        .map(r -> r.getReviewImages().stream().findFirst().map(ReviewImage::getImageUrl))
-        .map(Optional::toString)
-        .toList();
-  }
-
-  // 현재 영업중 여부 및 마감 시간 반환
-  private OpenStatus getOpenStatus(Place place) {
-    int todayNow = LocalDate.now().getDayOfWeek().getValue() % 7;
-
-    LocalTime now = LocalTime.now();
-
-    Optional<LocalTime> endTime =
-        place.getPlaceHours().stream()
-            .filter(ph -> ph.getDayOfWeek() == todayNow)
-            .filter(ph -> !now.isBefore(ph.getStartTime()) && !now.isAfter(ph.getEndTime()))
-            .map(PlaceHour::getEndTime)
-            .findFirst();
-
-    return OpenStatus.of(endTime.isPresent(), endTime.orElse(null));
-  }
-
-  // 장소별 추천 비율 반환 (0~100)
-  private Integer getRecommendationPercent(Long placeId) {
-    Long recommendedCountObj =
-        jpaQueryFactory
-            .select(r.count())
-            .from(r)
-            .where(r.place.id.eq(placeId).and(r.recommendation.eq(true)))
-            .fetchOne();
-
-    Long totalCountObj =
-        jpaQueryFactory.select(r.count()).from(r).where(r.place.id.eq(placeId)).fetchOne();
-
-    long recommendedCount = (recommendedCountObj == null) ? 0L : recommendedCountObj;
-    long totalCount = (totalCountObj == null) ? 0L : totalCountObj;
-
-    if (totalCount == 0) {
-      return null;
-    }
-
-    double percent = recommendedCount * 100.0 / totalCount;
-    return (int) percent;
   }
 }
