@@ -1,4 +1,4 @@
-package com.ilta.solepli.domain.solmap.dto;
+package com.ilta.solepli.global.dto;
 
 import java.time.LocalTime;
 
