@@ -52,7 +52,7 @@ public class SolmapService {
   private static final int MAX_RELATED_SEARCH = 10;
 
   @Transactional(readOnly = true)
-  public List<ViewportMapMarkerDetail> getMarkersByViewport(
+  public List<MarkerResponse> getMarkersByViewport(
       Double swLat, Double swLng, Double neLat, Double neLng, String category) {
 
     // 좌표, 카테고리 유효성 검증
@@ -79,7 +79,7 @@ public class SolmapService {
     }
   }
 
-  private ViewportMapMarkerDetail toMarkerDetail(Place p, String selectedCategory) {
+  private MarkerResponse toMarkerDetail(Place p, String selectedCategory) {
     String category;
 
     if (selectedCategory != null) {
@@ -93,7 +93,7 @@ public class SolmapService {
               .orElseThrow(() -> new CustomException(ErrorCode.UNCATEGORIZED));
     }
 
-    return ViewportMapMarkerDetail.builder()
+    return MarkerResponse.builder()
         .id(p.getId())
         .latitude(p.getLatitude())
         .longitude(p.getLongitude())
