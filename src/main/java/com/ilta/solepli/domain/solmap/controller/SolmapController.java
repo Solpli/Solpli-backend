@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 
 import com.ilta.solepli.domain.solmap.dto.KeywordRequest;
 import com.ilta.solepli.domain.solmap.dto.PlaceSearchPreviewResponse;
+import com.ilta.solepli.domain.solmap.dto.RelatedSearchResponse;
 import com.ilta.solepli.domain.solmap.dto.ViewportMapMarkerDetail;
 import com.ilta.solepli.domain.solmap.service.SolmapService;
 import com.ilta.solepli.domain.user.util.CustomUserDetails;
@@ -96,5 +97,16 @@ public class SolmapController {
             swLat, swLng, neLat, neLng, userLat, userLng, category, cursorId, cursorDist, limit);
 
     return ResponseEntity.ok().body(SuccessResponse.successWithData(response));
+  }
+
+  @Operation(summary = "연관 검색어 조회 API", description = "연관 검색어 조회 API 입니다.")
+  @GetMapping("search/related")
+  public ResponseEntity<SuccessResponse<List<RelatedSearchResponse>>> getRelatedSearch(
+      @RequestParam String keyword, @RequestParam Double userLat, @RequestParam Double userLng) {
+
+    List<RelatedSearchResponse> response =
+        solmapService.getRelatedSearch(keyword, userLat, userLng);
+
+    return ResponseEntity.ok(SuccessResponse.successWithData(response));
   }
 }
