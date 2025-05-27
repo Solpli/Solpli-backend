@@ -47,7 +47,8 @@ public class SecurityConfig {
                         "/api/auth/**",
                         "/api/solmap/markers",
                         "/api/sollect/search",
-                        "api/solmap/places")
+                        "/api/solmap/places",
+                        "/api/solmap/search/related")
                     .permitAll() // 로그인과 회원가입은 인증 없이 접근 가능
                     .anyRequest()
                     .authenticated() // 그 외 요청은 인증 필요

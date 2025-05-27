@@ -3,6 +3,8 @@ package com.ilta.solepli.domain.solmap.service;
 import static com.ilta.solepli.global.util.OpenStatusUtil.getOpenStatus;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,7 @@ import com.ilta.solepli.domain.place.entity.mapping.PlaceCategory;
 import com.ilta.solepli.domain.place.entity.mapping.QPlaceCategory;
 import com.ilta.solepli.domain.place.repository.PlaceRepository;
 import com.ilta.solepli.domain.solmap.dto.*;
+import com.ilta.solepli.domain.solmap.entity.SearchType;
 import com.ilta.solepli.global.dto.OpenStatus;
 import com.ilta.solepli.global.exception.CustomException;
 import com.ilta.solepli.global.exception.ErrorCode;
@@ -46,9 +49,10 @@ public class SolmapService {
   private static final int MAX_RECENT_SEARCH = 10;
   private static final int TAG_LIMIT = 3;
   private static final int THUMBNAIL_LIMIT = 3;
+  private static final int MAX_RELATED_SEARCH = 10;
 
   @Transactional(readOnly = true)
-  public List<ViewportMapMarkerDetail> getMarkersByViewport(
+  public List<MarkerResponse> getMarkersByViewport(
       Double swLat, Double swLng, Double neLat, Double neLng, String category) {
 
     // 좌표, 카테고리 유효성 검증
@@ -75,7 +79,7 @@ public class SolmapService {
     }
   }
 
-  private ViewportMapMarkerDetail toMarkerDetail(Place p, String selectedCategory) {
+  private MarkerResponse toMarkerDetail(Place p, String selectedCategory) {
     String category;
 
     if (selectedCategory != null) {
@@ -89,7 +93,7 @@ public class SolmapService {
               .orElseThrow(() -> new CustomException(ErrorCode.UNCATEGORIZED));
     }
 
-    return ViewportMapMarkerDetail.builder()
+    return MarkerResponse.builder()
         .id(p.getId())
         .latitude(p.getLatitude())
         .longitude(p.getLongitude())
@@ -291,5 +295,98 @@ public class SolmapService {
     }
 
     return distance.gt(cursorDist).or(distance.eq(cursorDist).and(p.id.gt(cursorId)));
+  }
+
+  @Transactional(readOnly = true)
+  public List<RelatedSearchResponse> getRelatedSearch(
+      String keyword, Double userLat, Double userLng) {
+    // 구 검색 결과 스트림
+    Stream<RelatedSearchResponse> placesDistrictLike = getDistrictsByKeyword(keyword);
+    // 동 검색 결과 스트림
+    Stream<RelatedSearchResponse> placesNeighborhoodLike = getNeighborhoodsByKeyword(keyword);
+    // 장소 검색 결과 스트림 (거리순)
+    Stream<RelatedSearchResponse> placesNameLike = getPlacesByKeyword(keyword, userLat, userLng);
+
+    // 스트림을 합쳐서, 앞에서부터 MAX개만 리스트로 수집
+    return Stream.of(placesDistrictLike, placesNeighborhoodLike, placesNameLike)
+        .flatMap(Function.identity())
+        .limit(MAX_RELATED_SEARCH)
+        .toList();
+  }
+
+  /** keyword가 포함된 구 명을 중복 없이 조회하여 DTO로 매핑한 스트림을 반환. */
+  private Stream<RelatedSearchResponse> getDistrictsByKeyword(String keyword) {
+    return jpaQueryFactory
+        .select(p.district)
+        .distinct()
+        .from(p)
+        .where(p.district.contains(keyword))
+        .fetch()
+        .stream()
+        .map(s -> RelatedSearchResponse.builder().type(SearchType.DISTRICT).name(s).build());
+  }
+
+  /** keyword가 포함된 동 명을 중복 없이 조회하여 DTO로 매핑한 스트림을 반환. */
+  private Stream<RelatedSearchResponse> getNeighborhoodsByKeyword(String keyword) {
+    return jpaQueryFactory
+        .select(p.neighborhood)
+        .distinct()
+        .from(p)
+        .where(p.neighborhood.contains(keyword))
+        .fetch()
+        .stream()
+        .map(s -> RelatedSearchResponse.builder().type(SearchType.DISTRICT).name(s).build());
+  }
+
+  /** keyword가 포함된 장소를 거리순으로 조회하여 DTO로 매핑한 스트림을 반환. */
+  private Stream<RelatedSearchResponse> getPlacesByKeyword(
+      String keyword, Double userLat, Double userLng) {
+    return jpaQueryFactory
+        .select(p)
+        .from(p)
+        .join(p.placeCategories, pc)
+        .join(pc.category, c)
+        .where(p.name.contains(keyword))
+        .orderBy(distance(userLat, userLng).asc())
+        .fetch()
+        .stream()
+        .map(
+            p ->
+                RelatedSearchResponse.builder()
+                    .id(p.getId())
+                    .type(SearchType.PLACE)
+                    .name(p.getName())
+                    .address(p.getAddress())
+                    // 미터 단위 계산 후, m/km DTO로 변환
+                    .distance(
+                        Distance.fromMeter(
+                            (int)
+                                calculateDistance(
+                                    userLat, userLng, p.getLatitude(), p.getLongitude())))
+                    .category(getMainCategory(p))
+                    .build());
+  }
+
+  /** 장소에 연결된 카테고리 중 첫 번째(대표) 카테고리명을 반환. */
+  private String getMainCategory(Place place) {
+    return place.getPlaceCategories().get(0).getCategory().getName();
+  }
+
+  /** 두 위경도 좌표 간의 거리를 계산하여 미터 단위(double)로 반환. */
+  private double calculateDistance(double lat1, double lng1, double lat2, double lng2) {
+    final int EARTH_RADIUS = 6371000; // 지구 반지름 (미터 단위)
+
+    double dLat = Math.toRadians(lat2 - lat1);
+    double dLng = Math.toRadians(lng2 - lng1);
+
+    double a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2)
+            + Math.cos(Math.toRadians(lat1))
+                * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLng / 2)
+                * Math.sin(dLng / 2);
+    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return EARTH_RADIUS * c; // 결과: 미터(m) 단위 거리
   }
 }
