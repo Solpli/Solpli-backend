@@ -16,4 +16,6 @@ public interface SolmarkSollectRepository extends JpaRepository<SolmarkSollect, 
   List<Long> findSollectIdsByUser(@Param("user") User user);
 
   Optional<SolmarkSollect> findBySollectAndUser(Sollect sollect, User user);
+
+  Long countSolmarkSollectsBySollect(Sollect sollect);
 }
