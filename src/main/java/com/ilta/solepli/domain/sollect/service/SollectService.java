@@ -18,10 +18,12 @@ import lombok.RequiredArgsConstructor;
 
 import com.ilta.solepli.domain.place.entity.Place;
 import com.ilta.solepli.domain.place.repository.PlaceRepository;
+import com.ilta.solepli.domain.place.repository.PlaceRepositoryCustom;
 import com.ilta.solepli.domain.sollect.dto.SollectSearchResponseContent;
 import com.ilta.solepli.domain.sollect.dto.request.SollectCreateRequest;
 import com.ilta.solepli.domain.sollect.dto.request.SollectUpdateRequest;
 import com.ilta.solepli.domain.sollect.dto.response.SollectCreateResponse;
+import com.ilta.solepli.domain.sollect.dto.response.SollectDetailResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectSearchResponse;
 import com.ilta.solepli.domain.sollect.entity.ContentType;
 import com.ilta.solepli.domain.sollect.entity.Sollect;
@@ -49,6 +51,7 @@ public class SollectService {
   private final RedisTemplate<String, Object> redisTemplate;
   private final SollectRepositoryCustom sollectRepositoryCustom;
   private final SolmarkSollectRepository solmarkSollectRepository;
+  private final PlaceRepositoryCustom placeRepositoryCustom;
 
   private static final String RECENT_SEARCH_PREFIX = "sollect_recent_search:";
   private static final int MAX_RECENT_SEARCH = 10;
@@ -207,6 +210,90 @@ public class SollectService {
     }
 
     sollectContentRepository.saveAll(sollectContents);
+  }
+
+  @Transactional(readOnly = true)
+  public SollectDetailResponse getSollectDetail(Long id, User user) {
+    Sollect sollect =
+        sollectRepository
+            .findFullSollectById(id)
+            .orElseThrow(() -> new CustomException(ErrorCode.SOLLECT_NOT_FOUND));
+
+    User writer = sollect.getUser();
+    List<SollectContent> sollectContents = sollect.getSollectContents();
+    List<SollectPlace> sollectPlaces = sollect.getSollectPlaces();
+
+    // 썸네일 이미지 URL
+    String thumbnailImageUrl = sollectContents.get(0).getImageUrl();
+
+    // 장소 정보
+    Place firstPlace = sollectPlaces.get(0).getPlace();
+    String placeName = firstPlace.getName();
+    Integer otherPlaceCount = sollectPlaces.size() - 1;
+
+    // 쏠렉트 내용
+    List<SollectDetailResponse.SollectContent> contents = new ArrayList<>();
+    for (SollectContent sollectContent : sollectContents) {
+      if (sollectContent.getIsThumbnail()) {
+        continue;
+      }
+      SollectDetailResponse.SollectContent content = null;
+      if (sollectContent.getType().equals(ContentType.IMAGE)) {
+        content =
+            SollectDetailResponse.SollectContent.builder()
+                .type(sollectContent.getType())
+                .imageUrl(sollectContent.getImageUrl())
+                .build();
+      } else if (sollectContent.getType().equals(ContentType.TEXT)) {
+        content =
+            SollectDetailResponse.SollectContent.builder()
+                .type(sollectContent.getType())
+                .text(sollectContent.getText())
+                .build();
+      }
+      contents.add(content);
+    }
+
+    // 쏠렉트 저장 수
+    Long savedCount = solmarkSollectRepository.countSolmarkSollectsBySollect(sollect);
+
+    // 장소 요약 정보
+    List<SollectDetailResponse.PlaceSummary> placeSummaries = new ArrayList<>();
+    for (SollectPlace sollectPlace : sollectPlaces) {
+      Place place = sollectPlace.getPlace();
+      List<String> tags = placeRepositoryCustom.getTopTagsForPlace(place.getId(), 3);
+      Integer recommendationPercent = placeRepositoryCustom.getRecommendationPercent(place.getId());
+
+      SollectDetailResponse.PlaceSummary placeSummary =
+          SollectDetailResponse.PlaceSummary.builder()
+              .name(place.getName())
+              .category(place.getTypes())
+              .recommendationPercent(recommendationPercent)
+              .tags(tags)
+              .rating(place.getRating())
+              .build();
+      // isSaved는 추후에 쏠마크 - 쏠맵 기능 구현되면 추가 예정
+
+      placeSummaries.add(placeSummary);
+    }
+
+    SollectDetailResponse response =
+        SollectDetailResponse.builder()
+            .thumbnailImageUrl(thumbnailImageUrl)
+            .title(sollect.getTitle())
+            .placeName(placeName)
+            .otherPlaceCount(otherPlaceCount)
+            .district(firstPlace.getDistrict())
+            .neighborhood(firstPlace.getNeighborhood())
+            .profileImageUrl(writer.getProfileImageUrl())
+            .nickname(writer.getNickname())
+            .createdAt(sollect.getCreatedAt())
+            .contents(contents)
+            .savedCount(savedCount)
+            .placeSummaries(placeSummaries)
+            .build();
+
+    return response;
   }
 
   @Transactional

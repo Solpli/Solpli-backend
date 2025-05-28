@@ -28,6 +28,7 @@ import com.ilta.solepli.domain.sollect.dto.request.KeywordRequest;
 import com.ilta.solepli.domain.sollect.dto.request.SollectCreateRequest;
 import com.ilta.solepli.domain.sollect.dto.request.SollectUpdateRequest;
 import com.ilta.solepli.domain.sollect.dto.response.SollectCreateResponse;
+import com.ilta.solepli.domain.sollect.dto.response.SollectDetailResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectSearchResponse;
 import com.ilta.solepli.domain.sollect.service.SollectService;
 import com.ilta.solepli.domain.user.entity.User;
@@ -71,6 +72,21 @@ public class SollectController {
     sollectService.uploadSollectImage(id, files, userDetails.user());
 
     return ResponseEntity.ok().body(SuccessResponse.successWithNoData("쏠렉트 이미지 업로드 성공"));
+  }
+
+  @Operation(summary = "쏠렉트 상세 조회 API", description = "쏠렉트를 상세 조회하는 API입니다.")
+  @GetMapping("/{id}")
+  public ResponseEntity<SuccessResponse<SollectDetailResponse>> getSollectDetail(
+      @PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+    User user = null;
+    if (userDetails != null) {
+      user = userDetails.user();
+    }
+
+    SollectDetailResponse sollectDetail = sollectService.getSollectDetail(id, user);
+
+    return ResponseEntity.ok().body(SuccessResponse.successWithData(sollectDetail));
   }
 
   @Operation(summary = "쏠렉트 수정 API", description = "쏠렉트를 수정하는 API입니다.")

@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -49,7 +50,9 @@ public class SecurityConfig {
                         "/api/sollect/search",
                         "/api/solmap/places",
                         "/api/solmap/search/related")
-                    .permitAll() // 로그인과 회원가입은 인증 없이 접근 가능
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/sollect/*")
+                    .permitAll()
                     .anyRequest()
                     .authenticated() // 그 외 요청은 인증 필요
             )

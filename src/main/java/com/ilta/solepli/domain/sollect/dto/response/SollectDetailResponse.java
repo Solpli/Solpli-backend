@@ -30,7 +30,7 @@ public record SollectDetailResponse(
   public record PlaceSummary(
       String name,
       String category,
-      Integer recommendationRate,
+      Integer recommendationPercent,
       List<String> tags,
       Boolean isSaved,
       Double rating) {}
