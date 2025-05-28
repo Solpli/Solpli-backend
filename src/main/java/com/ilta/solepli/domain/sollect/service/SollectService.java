@@ -216,12 +216,13 @@ public class SollectService {
   public SollectDetailResponse getSollectDetail(Long id, User user) {
     Sollect sollect =
         sollectRepository
-            .findFullSollectById(id)
+            .findWithContentById(id)
             .orElseThrow(() -> new CustomException(ErrorCode.SOLLECT_NOT_FOUND));
 
     User writer = sollect.getUser();
     List<SollectContent> sollectContents = sollect.getSollectContents();
-    List<SollectPlace> sollectPlaces = sollect.getSollectPlaces();
+    List<SollectPlace> sollectPlaces =
+        sollectPlaceRepository.findBySollectIdWithPlace(sollect.getId());
 
     // 썸네일 이미지 URL
     String thumbnailImageUrl = sollectContents.get(0).getImageUrl();

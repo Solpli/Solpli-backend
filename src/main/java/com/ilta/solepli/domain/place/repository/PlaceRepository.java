@@ -2,12 +2,14 @@ package com.ilta.solepli.domain.place.repository;
 
 import java.util.List;
 
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.ilta.solepli.domain.place.entity.Place;
 
+@Primary
 public interface PlaceRepository extends JpaRepository<Place, Long>, PlaceRepositoryCustom {
 
   @Query(
