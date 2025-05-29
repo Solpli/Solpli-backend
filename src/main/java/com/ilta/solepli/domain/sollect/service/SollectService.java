@@ -18,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 
 import com.ilta.solepli.domain.place.entity.Place;
 import com.ilta.solepli.domain.place.repository.PlaceRepository;
-import com.ilta.solepli.domain.place.repository.PlaceRepositoryCustom;
 import com.ilta.solepli.domain.sollect.dto.SollectSearchResponseContent;
 import com.ilta.solepli.domain.sollect.dto.request.SollectCreateRequest;
 import com.ilta.solepli.domain.sollect.dto.request.SollectUpdateRequest;
@@ -53,7 +52,6 @@ public class SollectService {
   private final RedisTemplate<String, Object> redisTemplate;
   private final SollectRepositoryCustom sollectRepositoryCustom;
   private final SolmarkSollectRepository solmarkSollectRepository;
-  private final PlaceRepositoryCustom placeRepositoryCustom;
 
   private static final String RECENT_SEARCH_PREFIX = "sollect_recent_search:";
   private static final int MAX_RECENT_SEARCH = 10;
@@ -264,8 +262,8 @@ public class SollectService {
     List<SollectDetailResponse.PlaceSummary> placeSummaries = new ArrayList<>();
     for (SollectPlace sollectPlace : sollectPlaces) {
       Place place = sollectPlace.getPlace();
-      List<String> tags = placeRepositoryCustom.getTopTagsForPlace(place.getId(), 3);
-      Integer recommendationPercent = placeRepositoryCustom.getRecommendationPercent(place.getId());
+      List<String> tags = placeRepository.getTopTagsForPlace(place.getId(), 3);
+      Integer recommendationPercent = placeRepository.getRecommendationPercent(place.getId());
 
       SollectDetailResponse.PlaceSummary placeSummary =
           SollectDetailResponse.PlaceSummary.builder()
@@ -404,12 +402,12 @@ public class SollectService {
 
   @Transactional(readOnly = true)
   public List<PlaceSearchResponse> getSearchPlaces(String keyword) {
-    return placeRepositoryCustom.getPlacesByKeyword(keyword);
+    return placeRepository.getPlacesByKeyword(keyword);
   }
 
   @Transactional(readOnly = true)
   public SollectPlaceAddPreviewResponse getPlacePreview(Long placeId) {
-    return placeRepositoryCustom.getSollectAddPreview(placeId);
+    return placeRepository.getSollectAddPreview(placeId);
   }
 
   private SollectContent findImage(List<SollectContent> sollectContents, String filename) {
