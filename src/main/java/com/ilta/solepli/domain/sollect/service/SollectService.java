@@ -22,6 +22,7 @@ import com.ilta.solepli.domain.place.repository.PlaceRepositoryCustom;
 import com.ilta.solepli.domain.sollect.dto.SollectSearchResponseContent;
 import com.ilta.solepli.domain.sollect.dto.request.SollectCreateRequest;
 import com.ilta.solepli.domain.sollect.dto.request.SollectUpdateRequest;
+import com.ilta.solepli.domain.sollect.dto.response.RelatedPlaceSearchResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectCreateResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectDetailResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectSearchResponse;
@@ -398,6 +399,11 @@ public class SollectService {
                 .hasNext(hasNext)
                 .build())
         .build();
+  }
+
+  @Transactional(readOnly = true)
+  public List<RelatedPlaceSearchResponse> getPlaceRelatedSearch(String keyword) {
+    return placeRepositoryCustom.getPlacesByKeyword(keyword);
   }
 
   private SollectContent findImage(List<SollectContent> sollectContents, String filename) {

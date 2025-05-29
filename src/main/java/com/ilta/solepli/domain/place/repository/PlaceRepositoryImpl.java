@@ -6,11 +6,16 @@ import java.util.Optional;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
+import com.ilta.solepli.domain.category.entity.QCategory;
+import com.ilta.solepli.domain.place.entity.Place;
+import com.ilta.solepli.domain.place.entity.QPlace;
+import com.ilta.solepli.domain.place.entity.mapping.QPlaceCategory;
 import com.ilta.solepli.domain.review.entity.QReview;
 import com.ilta.solepli.domain.review.entity.Review;
 import com.ilta.solepli.domain.review.entity.mapping.QReviewImage;
 import com.ilta.solepli.domain.review.entity.mapping.QReviewTag;
 import com.ilta.solepli.domain.review.entity.mapping.ReviewImage;
+import com.ilta.solepli.domain.sollect.dto.response.RelatedPlaceSearchResponse;
 
 @RequiredArgsConstructor
 public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
@@ -19,6 +24,9 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
   private final QReviewTag rt = QReviewTag.reviewTag;
   private final QReview r = QReview.review;
   private final QReviewImage ri = QReviewImage.reviewImage;
+  private final QPlace p = QPlace.place;
+  private final QPlaceCategory pc = QPlaceCategory.placeCategory;
+  private final QCategory c = QCategory.category;
 
   // 장소별 최다 리뷰 태그 n개 조회
   @Override
@@ -75,5 +83,31 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
 
     double percent = recommendedCount * 100.0 / totalCount;
     return (int) percent;
+  }
+
+  @Override
+  public List<RelatedPlaceSearchResponse> getPlacesByKeyword(String keyword) {
+    return jpaQueryFactory
+        .select(p)
+        .from(p)
+        .join(p.placeCategories, pc)
+        .join(pc.category, c)
+        .where(p.name.contains(keyword))
+        .fetch()
+        .stream()
+        .map(
+            p ->
+                RelatedPlaceSearchResponse.builder()
+                    .id(p.getId())
+                    .name(p.getName())
+                    .address(p.getAddress())
+                    .category(getMainCategory(p))
+                    .build())
+        .toList();
+  }
+
+  /** 장소에 연결된 카테고리 중 첫 번째(대표) 카테고리명을 반환. */
+  private String getMainCategory(Place place) {
+    return place.getPlaceCategories().get(0).getCategory().getName();
   }
 }

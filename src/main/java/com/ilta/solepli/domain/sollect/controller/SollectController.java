@@ -27,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 import com.ilta.solepli.domain.sollect.dto.request.KeywordRequest;
 import com.ilta.solepli.domain.sollect.dto.request.SollectCreateRequest;
 import com.ilta.solepli.domain.sollect.dto.request.SollectUpdateRequest;
+import com.ilta.solepli.domain.sollect.dto.response.RelatedPlaceSearchResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectCreateResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectDetailResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectSearchResponse;
@@ -156,6 +157,16 @@ public class SollectController {
 
     SollectSearchResponse searchContents =
         sollectService.getSearchContents(user, cursorId, size, keyword, category);
+
+    return ResponseEntity.ok(SuccessResponse.successWithData(searchContents));
+  }
+
+  @Operation(summary = "장소 연관 검색어 조회 API", description = "장소 연관 검색어 조회 API입니다.")
+  @GetMapping("/search/place/related")
+  public ResponseEntity<SuccessResponse<List<RelatedPlaceSearchResponse>>> searchRelatedPlace(
+      @RequestParam(required = false) String keyword) {
+
+    List<RelatedPlaceSearchResponse> searchContents = sollectService.getPlaceRelatedSearch(keyword);
 
     return ResponseEntity.ok(SuccessResponse.successWithData(searchContents));
   }
