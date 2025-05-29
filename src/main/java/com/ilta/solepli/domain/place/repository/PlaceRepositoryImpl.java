@@ -94,6 +94,7 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
         .join(p.placeCategories, pc)
         .join(pc.category, c)
         .where(p.name.contains(keyword))
+        .limit(10)
         .fetch()
         .stream()
         .map(

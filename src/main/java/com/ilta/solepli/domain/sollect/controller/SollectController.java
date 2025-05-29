@@ -164,7 +164,7 @@ public class SollectController {
 
   @Operation(
       summary = "쏠렉트 장소 연관 검색어 조회 API",
-      description = "쏠렉트 장소 추가 화면에서 사용되는 연관 검색어 조회 API입니다.")
+      description = "쏠렉트 장는소 추가 화면에서 사용되는 연관 검색어 조회 API입니다.")
   @GetMapping("/search/place/related")
   public ResponseEntity<SuccessResponse<List<RelatedPlaceSearchResponse>>> searchRelatedPlace(
       @RequestParam(required = true) String keyword) {
