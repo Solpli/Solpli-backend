@@ -49,7 +49,8 @@ public class SecurityConfig {
                         "/api/solmap/markers",
                         "/api/sollect/search",
                         "/api/solmap/places",
-                        "/api/solmap/search/related")
+                        "/api/solmap/search/related",
+                        "/api/sollect/search/place/**")
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/sollect/*")
                     .permitAll()
