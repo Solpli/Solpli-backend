@@ -30,6 +30,7 @@ import com.ilta.solepli.domain.sollect.dto.request.SollectUpdateRequest;
 import com.ilta.solepli.domain.sollect.dto.response.RelatedPlaceSearchResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectCreateResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectDetailResponse;
+import com.ilta.solepli.domain.sollect.dto.response.SollectPlaceAddPreviewResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectSearchResponse;
 import com.ilta.solepli.domain.sollect.service.SollectService;
 import com.ilta.solepli.domain.user.entity.User;
@@ -161,13 +162,27 @@ public class SollectController {
     return ResponseEntity.ok(SuccessResponse.successWithData(searchContents));
   }
 
-  @Operation(summary = "장소 연관 검색어 조회 API", description = "장소 연관 검색어 조회 API입니다.")
+  @Operation(
+      summary = "쏠렉트 장소 연관 검색어 조회 API",
+      description = "쏠렉트 장소 추가 화면에서 사용되는 연관 검색어 조회 API입니다.")
   @GetMapping("/search/place/related")
   public ResponseEntity<SuccessResponse<List<RelatedPlaceSearchResponse>>> searchRelatedPlace(
-      @RequestParam(required = false) String keyword) {
+      @RequestParam(required = true) String keyword) {
 
     List<RelatedPlaceSearchResponse> searchContents = sollectService.getPlaceRelatedSearch(keyword);
 
     return ResponseEntity.ok(SuccessResponse.successWithData(searchContents));
+  }
+
+  @Operation(
+      summary = "쏠렉트 장소 프리뷰 조회 API",
+      description = "쏠렉트 장소 추가 화면에서 사용되는 장소 프리뷰를 조회하는 API입니다.")
+  @GetMapping("/search/place/{placeId}")
+  public ResponseEntity<SuccessResponse<SollectPlaceAddPreviewResponse>> searchRelatedPlace(
+      @PathVariable(required = true) Long placeId) {
+
+    SollectPlaceAddPreviewResponse placePreview = sollectService.getPlacePreview(placeId);
+
+    return ResponseEntity.ok(SuccessResponse.successWithData(placePreview));
   }
 }

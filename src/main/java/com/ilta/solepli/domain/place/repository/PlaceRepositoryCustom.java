@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Repository;
 
 import com.ilta.solepli.domain.sollect.dto.response.RelatedPlaceSearchResponse;
+import com.ilta.solepli.domain.sollect.dto.response.SollectPlaceAddPreviewResponse;
 
 @Repository
 public interface PlaceRepositoryCustom {
@@ -16,4 +17,6 @@ public interface PlaceRepositoryCustom {
   Integer getRecommendationPercent(Long placeId);
 
   List<RelatedPlaceSearchResponse> getPlacesByKeyword(String keyword);
+
+  SollectPlaceAddPreviewResponse getSollectAddPreview(Long placeId);
 }

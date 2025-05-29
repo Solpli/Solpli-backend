@@ -16,6 +16,7 @@ import com.ilta.solepli.domain.review.entity.mapping.QReviewImage;
 import com.ilta.solepli.domain.review.entity.mapping.QReviewTag;
 import com.ilta.solepli.domain.review.entity.mapping.ReviewImage;
 import com.ilta.solepli.domain.sollect.dto.response.RelatedPlaceSearchResponse;
+import com.ilta.solepli.domain.sollect.dto.response.SollectPlaceAddPreviewResponse;
 
 @RequiredArgsConstructor
 public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
@@ -104,6 +105,25 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
                     .category(getMainCategory(p))
                     .build())
         .toList();
+  }
+
+  @Override
+  public SollectPlaceAddPreviewResponse getSollectAddPreview(Long placeId) {
+    Place place =
+        jpaQueryFactory
+            .select(p)
+            .from(p)
+            .join(p.placeCategories, pc)
+            .join(pc.category, c)
+            .where(p.id.eq(placeId))
+            .fetchOne();
+
+    return SollectPlaceAddPreviewResponse.builder()
+        .id(place.getId())
+        .name(place.getName())
+        .address(place.getAddress())
+        .category(getMainCategory(place))
+        .build();
   }
 
   /** 장소에 연결된 카테고리 중 첫 번째(대표) 카테고리명을 반환. */
