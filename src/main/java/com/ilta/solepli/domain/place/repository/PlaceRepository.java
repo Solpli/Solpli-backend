@@ -2,7 +2,6 @@ package com.ilta.solepli.domain.place.repository;
 
 import java.util.List;
 
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -26,7 +25,6 @@ public interface PlaceRepository extends JpaRepository<Place, Long>, PlaceReposi
       @Param("neLng") Double neLng,
       @Param("category") String category);
 
-  @EntityGraph(attributePaths = {"placeCategories", "placeCategories.category"})
   @Query(
       "SELECT DISTINCT  p "
           + "FROM Place p "
