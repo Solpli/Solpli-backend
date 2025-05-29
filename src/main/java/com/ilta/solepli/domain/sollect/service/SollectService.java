@@ -22,7 +22,7 @@ import com.ilta.solepli.domain.place.repository.PlaceRepositoryCustom;
 import com.ilta.solepli.domain.sollect.dto.SollectSearchResponseContent;
 import com.ilta.solepli.domain.sollect.dto.request.SollectCreateRequest;
 import com.ilta.solepli.domain.sollect.dto.request.SollectUpdateRequest;
-import com.ilta.solepli.domain.sollect.dto.response.RelatedPlaceSearchResponse;
+import com.ilta.solepli.domain.sollect.dto.response.PlaceSearchResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectCreateResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectDetailResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectPlaceAddPreviewResponse;
@@ -403,7 +403,7 @@ public class SollectService {
   }
 
   @Transactional(readOnly = true)
-  public List<RelatedPlaceSearchResponse> getPlaceRelatedSearch(String keyword) {
+  public List<PlaceSearchResponse> getSearchPlaces(String keyword) {
     return placeRepositoryCustom.getPlacesByKeyword(keyword);
   }
 

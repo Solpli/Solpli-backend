@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 import com.ilta.solepli.domain.sollect.dto.request.KeywordRequest;
 import com.ilta.solepli.domain.sollect.dto.request.SollectCreateRequest;
 import com.ilta.solepli.domain.sollect.dto.request.SollectUpdateRequest;
-import com.ilta.solepli.domain.sollect.dto.response.RelatedPlaceSearchResponse;
+import com.ilta.solepli.domain.sollect.dto.response.PlaceSearchResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectCreateResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectDetailResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectPlaceAddPreviewResponse;
@@ -162,14 +162,12 @@ public class SollectController {
     return ResponseEntity.ok(SuccessResponse.successWithData(searchContents));
   }
 
-  @Operation(
-      summary = "쏠렉트 장소 연관 검색어 조회 API",
-      description = "쏠렉트 장는소 추가 화면에서 사용되는 연관 검색어 조회 API입니다.")
-  @GetMapping("/search/place/related")
-  public ResponseEntity<SuccessResponse<List<RelatedPlaceSearchResponse>>> searchRelatedPlace(
+  @Operation(summary = "쏠렉트 장소 검색 조회 API", description = "쏠렉트 장소 추가 화면에서 사용되는 검색 API입니다.")
+  @GetMapping("/search/place")
+  public ResponseEntity<SuccessResponse<List<PlaceSearchResponse>>> searchPlaces(
       @RequestParam(required = true) String keyword) {
 
-    List<RelatedPlaceSearchResponse> searchContents = sollectService.getPlaceRelatedSearch(keyword);
+    List<PlaceSearchResponse> searchContents = sollectService.getSearchPlaces(keyword);
 
     return ResponseEntity.ok(SuccessResponse.successWithData(searchContents));
   }

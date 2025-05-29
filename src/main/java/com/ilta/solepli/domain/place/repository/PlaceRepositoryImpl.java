@@ -15,7 +15,7 @@ import com.ilta.solepli.domain.review.entity.Review;
 import com.ilta.solepli.domain.review.entity.mapping.QReviewImage;
 import com.ilta.solepli.domain.review.entity.mapping.QReviewTag;
 import com.ilta.solepli.domain.review.entity.mapping.ReviewImage;
-import com.ilta.solepli.domain.sollect.dto.response.RelatedPlaceSearchResponse;
+import com.ilta.solepli.domain.sollect.dto.response.PlaceSearchResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectPlaceAddPreviewResponse;
 
 @RequiredArgsConstructor
@@ -87,7 +87,7 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
   }
 
   @Override
-  public List<RelatedPlaceSearchResponse> getPlacesByKeyword(String keyword) {
+  public List<PlaceSearchResponse> getPlacesByKeyword(String keyword) {
     return jpaQueryFactory
         .select(p)
         .from(p)
@@ -99,7 +99,7 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
         .stream()
         .map(
             p ->
-                RelatedPlaceSearchResponse.builder()
+                PlaceSearchResponse.builder()
                     .id(p.getId())
                     .name(p.getName())
                     .address(p.getAddress())
