@@ -110,7 +110,7 @@ public class SolmapController {
     return ResponseEntity.ok(SuccessResponse.successWithData(response));
   }
 
-  @Operation(summary = "지역 검색 마커 정보 조회 API", description = "지역 검색 카머 정보 조회 aPI 입니다.")
+  @Operation(summary = "지역 검색 마커 정보 조회 API", description = "지역 검색 마커 정보 조회 API 입니다.")
   @GetMapping("/region/{regionName}/markers")
   public ResponseEntity<SuccessResponse<List<MarkerResponse>>> getMarkersByRegion(
       @PathVariable String regionName) {
