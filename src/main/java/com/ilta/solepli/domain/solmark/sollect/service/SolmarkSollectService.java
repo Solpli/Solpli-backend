@@ -95,6 +95,11 @@ public class SolmarkSollectService {
     solmarkSollectRepository.delete(solmarkSollect);
   }
 
+  @Transactional(readOnly = true)
+  public Long getSavedCount(Sollect sollect) {
+    return solmarkSollectRepository.countSolmarkSollectsBySollect(sollect);
+  }
+
   private List<SolmarkSollectResponse.SollectSearchContent> toResponseContent(
       List<SolmarkSollectResponseContent> contents) {
     return contents.stream()

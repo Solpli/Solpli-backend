@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -48,6 +49,7 @@ public class Sollect extends Timestamped {
   private List<SollectPlace> sollectPlaces = new ArrayList<>();
 
   @OneToMany(mappedBy = "sollect", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OrderBy("seq ASC")
   @Builder.Default
   private List<SollectContent> sollectContents = new ArrayList<>();
 
