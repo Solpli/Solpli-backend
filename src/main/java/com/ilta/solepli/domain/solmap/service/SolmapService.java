@@ -389,4 +389,26 @@ public class SolmapService {
 
     return EARTH_RADIUS * c; // 결과: 미터(m) 단위 거리
   }
+
+  public List<MarkerResponse> getMarkersByRegion(String regionName) {
+    // regionName과 동일한 구, 동 장소 조회
+    return getMarkerByRegion(regionName);
+  }
+
+  private List<MarkerResponse> getMarkerByRegion(String regionName) {
+    // 조회된 각 장소를 DTO 변환
+    return placeRepository.findAllByRegionName(regionName).stream()
+        .map(this::getMarkerResponse)
+        .toList();
+  }
+
+  private MarkerResponse getMarkerResponse(Place p) {
+    // 응답 DTO 변환
+    return MarkerResponse.builder()
+        .id(p.getId())
+        .latitude(p.getLatitude())
+        .longitude(p.getLongitude())
+        .category(getMainCategory(p))
+        .build();
+  }
 }
