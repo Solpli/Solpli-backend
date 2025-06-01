@@ -87,7 +87,7 @@ public class SolmapController {
       @RequestParam Double neLng,
       @RequestParam Double userLat,
       @RequestParam Double userLng,
-      @RequestParam String category,
+      @RequestParam(required = false) String category,
       @RequestParam(required = false) Long cursorId,
       @RequestParam(required = false) Double cursorDist,
       @RequestParam(required = false, defaultValue = "5") int limit) {
