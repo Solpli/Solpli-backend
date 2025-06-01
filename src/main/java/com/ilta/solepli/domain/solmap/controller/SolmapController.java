@@ -119,4 +119,22 @@ public class SolmapController {
 
     return ResponseEntity.ok().body(SuccessResponse.successWithData(response));
   }
+
+  @Operation(summary = "지역 검색 장소 리스트 조회 API", description = "지역 검색 장소 리스트 조회 API 입니다.")
+  @GetMapping("/region/{regionName}/places")
+  public ResponseEntity<SuccessResponse<PlaceSearchPreviewResponse>> getPlacesByRegionPreview(
+      @PathVariable String regionName,
+      @RequestParam Double userLat,
+      @RequestParam Double userLng,
+      @RequestParam(required = false) String category,
+      @RequestParam(required = false) Long cursorId,
+      @RequestParam(required = false) Double cursorDist,
+      @RequestParam(required = false, defaultValue = "5") int limit) {
+
+    PlaceSearchPreviewResponse response =
+        solmapService.getPlacesByRegionPreview(
+            regionName, userLat, userLng, category, cursorId, cursorDist, limit);
+
+    return ResponseEntity.ok().body(SuccessResponse.successWithData(response));
+  }
 }

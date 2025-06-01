@@ -411,4 +411,117 @@ public class SolmapService {
         .category(getMainCategory(p))
         .build();
   }
+
+  @Transactional(readOnly = true)
+  public PlaceSearchPreviewResponse getPlacesByRegionPreview(
+      String regionName,
+      Double userLat,
+      Double userLng,
+      String category,
+      Long cursorId,
+      Double cursorDist,
+      int limit) {
+
+    // 카테고리, 지역명 유효성 검증
+    validCategory(category);
+    validRegionName(regionName);
+
+    // region, category, 커서 기준으로 장소를 limit+1개 조회
+    List<Place> fetched =
+        fetchPlacesByRegionAndCursor(
+            userLat, userLng, regionName, category, cursorId, cursorDist, limit);
+
+    // 다음 페이지 커서 값 세팅 (limit+1번째 데이터가 존재할 경우에만)
+    CursorInfo next = setNextCursor(fetched, userLat, userLng, limit);
+
+    // 조회된 장소 중 limit개만 PlacePreviewDetail DTO 매핑
+    List<PlacePreviewDetail> placePreviewDetails = mapToPreviewDetails(fetched, limit);
+
+    return PlaceSearchPreviewResponse.builder()
+        .places(placePreviewDetails)
+        .nextCursor(next.id())
+        .nextCursorDist(next.distance())
+        .build();
+  }
+
+  private List<Place> fetchPlacesByRegionAndCursor(
+      Double userLat,
+      Double userLng,
+      String regionName,
+      String category,
+      Long cursorId,
+      Double cursorDist,
+      int limit) {
+
+    // 거리 계산용 표현식 생성 (Haversine 공식)
+    NumberExpression<Double> distance = distance(userLat, userLng);
+
+    return jpaQueryFactory
+        .selectFrom(p)
+        .distinct()
+        .leftJoin(p.placeCategories, pc)
+        .leftJoin(pc.category, c)
+        .leftJoin(p.placeHours, ph)
+        .where(
+            regionNameIn(regionName),
+            categoryIn(category),
+            cursorAfter(cursorId, cursorDist, distance))
+        .orderBy(distance.asc(), p.id.asc())
+        .limit(limit + 1) // 커서 페이징을 위해 limit+1개 조회 (limit개 + nextCursor용 1개)
+        .fetch();
+  }
+
+  private CursorInfo setNextCursor(List<Place> places, Double userLat, Double userLng, int limit) {
+    Long nextCursor = null;
+    Double nextCursorDist = null;
+
+    // limit+1개가 조회되었다면, 마지막 요소를 기준으로 커서 정보 생성
+    if (places.size() > limit) {
+      nextCursor = places.get(limit - 1).getId();
+      Place place = places.get(limit - 1);
+      nextCursorDist =
+          getNextCursorDistance(userLat, userLng, place.getLatitude(), place.getLongitude());
+    }
+
+    return CursorInfo.of(nextCursor, nextCursorDist);
+  }
+
+  private List<PlacePreviewDetail> mapToPreviewDetails(List<Place> fetched, int limit) {
+
+    return fetched.stream()
+        .limit(limit) // limit개만 결과로 반환
+        .map(
+            p -> {
+              List<String> topTagsForPlace =
+                  placeRepository.getTopTagsForPlace(p.getId(), TAG_LIMIT);
+              List<String> reviewThumbnails =
+                  placeRepository.getReviewThumbnails(p.getId(), THUMBNAIL_LIMIT);
+              OpenStatus openStatus = getOpenStatus(p);
+              Integer isSoloRecommendedPercent =
+                  placeRepository.getRecommendationPercent(p.getId());
+
+              return PlacePreviewDetail.builder()
+                  .id(p.getId())
+                  .name(p.getName())
+                  .detailedCategory(p.getTypes())
+                  .tags(topTagsForPlace)
+                  .isSoloRecommended(isSoloRecommendedPercent)
+                  .rating(p.getRating())
+                  .isOpen(openStatus.isOpen())
+                  .closingTime(openStatus.closingTime())
+                  .thumbnailUrls(reviewThumbnails)
+                  .build();
+            })
+        .toList();
+  }
+
+  private BooleanExpression regionNameIn(String regionName) {
+    return p.district.eq(regionName).or(p.neighborhood.eq(regionName));
+  }
+
+  private void validRegionName(String regionName) {
+    if (!placeRepository.existsByDistrictOrNeighborhood(regionName, regionName)) {
+      throw new CustomException(ErrorCode.REGION_NOT_FOUND);
+    }
+  }
 }
