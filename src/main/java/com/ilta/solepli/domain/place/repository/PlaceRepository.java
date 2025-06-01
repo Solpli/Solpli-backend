@@ -32,4 +32,6 @@ public interface PlaceRepository extends JpaRepository<Place, Long>, PlaceReposi
           + "JOIN FETCH pc.category c "
           + "WHERE p.district = :regionName OR p.neighborhood = :regionName")
   List<Place> findAllByRegionName(@Param("regionName") String regionName);
+
+  Boolean existsByDistrictOrNeighborhood(String district, String neighborhood);
 }
