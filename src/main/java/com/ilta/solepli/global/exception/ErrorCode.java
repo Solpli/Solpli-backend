@@ -69,6 +69,7 @@ public enum ErrorCode {
   // 쏠렉트 관련 에러
   SOLLECT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 쏠렉트입니다."),
   SOLMARK_SOLLECT_NOT_FOUND(HttpStatus.NOT_FOUND, "쏠마크되지 않은 쏠렉트입니다."),
+  SOLMARK_SOLLECT_EXISTS(HttpStatus.BAD_REQUEST, "이미 쏠마크한 쏠렉트입니다."),
   SOLLECT_FORBIDDEN(HttpStatus.FORBIDDEN, "쏠렉트의 소유자가 아닙니다."),
   TOO_MANY_SOLLECT_IMAGES(HttpStatus.BAD_REQUEST, "쏠렉트 사진은 최대 100장까지 가능합니다."),
   CONTENT_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 콘텐츠 이미지를 찾을 수 없습니다."),

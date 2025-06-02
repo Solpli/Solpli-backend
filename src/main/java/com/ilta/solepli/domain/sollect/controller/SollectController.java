@@ -183,4 +183,20 @@ public class SollectController {
 
     return ResponseEntity.ok(SuccessResponse.successWithData(placePreview));
   }
+
+  @Operation(summary = "인기 쏠렉트 조회 API", description = "인기(저장 수가 많은) 쏠렉트를 조회하는 API 입니다.")
+  @GetMapping("/popular")
+  public ResponseEntity<SuccessResponse<List<SollectSearchResponse.SollectSearchContent>>>
+      getPopularSollects(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+    User user = null;
+    if (customUserDetails != null) {
+      user = customUserDetails.user();
+    }
+
+    List<SollectSearchResponse.SollectSearchContent> popularSollects =
+        sollectService.getPopularSollects(user);
+
+    return ResponseEntity.ok(SuccessResponse.successWithData(popularSollects));
+  }
 }
