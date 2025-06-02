@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -417,16 +418,29 @@ public class SollectService {
   public List<SollectSearchResponse.SollectSearchContent> getPopularSollects(User user) {
     // 저장 수가 많은 limit개 Sollect ID들
     List<Long> sollectIds = solmarkSollectService.getPopularSollectIds(POPULAR_SEARCH_LIMIT);
-    // DTO 변환
+
+    // 정렬되지 않은 DTO 리스트
     List<SollectSearchResponseContent> rawContents =
         sollectRepositoryCustom.searchSollectBySollectIds(sollectIds);
-    // 해당 유저의 쏠렉트 저장여부 알기 위해
+
+    // 인기순 정렬 보정
+    Map<Long, SollectSearchResponseContent> contentMap =
+        rawContents.stream()
+            .collect(Collectors.toMap(SollectSearchResponseContent::sollectId, c -> c));
+
+    List<SollectSearchResponseContent> sortedContents =
+        sollectIds.stream()
+            .map(contentMap::get)
+            .filter(Objects::nonNull) // 혹시 없는 경우 대비
+            .collect(Collectors.toList());
+
+    // 해당 유저의 쏠렉트 저장여부
     Set<Long> markedSet =
         (user == null)
             ? Collections.emptySet()
             : new HashSet<>(solmarkSollectRepository.findSollectIdsByUser(user));
 
-    return toResponseContent(rawContents, markedSet);
+    return toResponseContent(sortedContents, markedSet);
   }
 
   private SollectContent findImage(List<SollectContent> sollectContents, String filename) {
