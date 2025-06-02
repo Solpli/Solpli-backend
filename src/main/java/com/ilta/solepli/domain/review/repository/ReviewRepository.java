@@ -1,5 +1,8 @@
 package com.ilta.solepli.domain.review.repository;
 
+import java.util.List;
+
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,4 +16,15 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
   Double findAverageRatingByPlaceId(@Param("placeId") Long placeId);
 
   boolean existsByUserAndPlace(User user, Place place);
+
+  @Query(
+      """
+                      SELECT r
+                      FROM Review r
+                      JOIN FETCH r.user u
+                      JOIN FETCH r.reviewImages ri
+                      WHERE r.place.id = :placeId
+                      ORDER BY r.createdAt DESC
+                  """)
+  List<Review> findByWithImagesAndUserByPlaceId(@Param("placeId") Long placeId, Pageable pageable);
 }
