@@ -11,10 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-import com.ilta.solepli.domain.solmap.dto.KeywordRequest;
-import com.ilta.solepli.domain.solmap.dto.MarkerResponse;
-import com.ilta.solepli.domain.solmap.dto.PlaceSearchPreviewResponse;
-import com.ilta.solepli.domain.solmap.dto.RelatedSearchResponse;
+import com.ilta.solepli.domain.solmap.dto.*;
 import com.ilta.solepli.domain.solmap.service.SolmapService;
 import com.ilta.solepli.domain.user.util.CustomUserDetails;
 import com.ilta.solepli.global.response.SuccessResponse;
@@ -134,6 +131,16 @@ public class SolmapController {
     PlaceSearchPreviewResponse response =
         solmapService.getPlacesByRegionPreview(
             regionName, userLat, userLng, category, cursorId, cursorDist, limit);
+
+    return ResponseEntity.ok().body(SuccessResponse.successWithData(response));
+  }
+
+  @Operation(summary = "장소 상세정보 조회 API", description = "장소 상세정보 조회 API 입니다.")
+  @GetMapping("/place/search/{id}")
+  public ResponseEntity<SuccessResponse<PlaceDetailSearchResponse>> getPlaceDetail(
+      @PathVariable Long id) {
+
+    PlaceDetailSearchResponse response = solmapService.getPlaceDetail(id);
 
     return ResponseEntity.ok().body(SuccessResponse.successWithData(response));
   }

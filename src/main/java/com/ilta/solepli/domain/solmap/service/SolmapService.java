@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,8 +26,14 @@ import com.ilta.solepli.domain.place.entity.QPlaceHour;
 import com.ilta.solepli.domain.place.entity.mapping.PlaceCategory;
 import com.ilta.solepli.domain.place.entity.mapping.QPlaceCategory;
 import com.ilta.solepli.domain.place.repository.PlaceRepository;
+import com.ilta.solepli.domain.review.entity.Review;
+import com.ilta.solepli.domain.review.entity.mapping.ReviewImage;
+import com.ilta.solepli.domain.review.entity.mapping.ReviewTag;
+import com.ilta.solepli.domain.review.repository.ReviewRepository;
+import com.ilta.solepli.domain.review.repository.ReviewTagCustomRepository;
 import com.ilta.solepli.domain.solmap.dto.*;
 import com.ilta.solepli.domain.solmap.entity.SearchType;
+import com.ilta.solepli.domain.tag.entity.TagType;
 import com.ilta.solepli.global.dto.OpenStatus;
 import com.ilta.solepli.global.exception.CustomException;
 import com.ilta.solepli.global.exception.ErrorCode;
@@ -38,6 +45,9 @@ public class SolmapService {
 
   private final PlaceRepository placeRepository;
   private final CategoryRepository categoryRepository;
+  private final ReviewTagCustomRepository reviewTagCustomRepository;
+  private final ReviewRepository reviewRepository;
+
   private final RedisTemplate<String, Object> redisTemplate;
   private final JPAQueryFactory jpaQueryFactory;
   private final QPlace p = QPlace.place;
@@ -48,8 +58,10 @@ public class SolmapService {
   private static final String RECENT_SEARCH_PREFIX = "solmap_recent_search:";
   private static final int MAX_RECENT_SEARCH = 10;
   private static final int TAG_LIMIT = 3;
-  private static final int THUMBNAIL_LIMIT = 3;
+  private static final int PREVIEW_THUMBNAIL_LIMIT = 3;
   private static final int MAX_RELATED_SEARCH = 10;
+  private static final int MAX_PLACE_THUMBNAIL_LIMIT = 5;
+  private static final int INITIAL_REVIEW_LIMIT = 5;
 
   @Transactional(readOnly = true)
   public List<MarkerResponse> getMarkersByViewport(
@@ -218,7 +230,7 @@ public class SolmapService {
                   List<String> topTagsForPlace =
                       placeRepository.getTopTagsForPlace(p.getId(), TAG_LIMIT);
                   List<String> reviewThumbnails =
-                      placeRepository.getReviewThumbnails(p.getId(), THUMBNAIL_LIMIT);
+                      placeRepository.getReviewThumbnails(p.getId(), PREVIEW_THUMBNAIL_LIMIT);
                   OpenStatus openStatus = getOpenStatus(p);
                   Integer isSoloRecommendedPercent =
                       placeRepository.getRecommendationPercent(p.getId());
@@ -495,7 +507,7 @@ public class SolmapService {
               List<String> topTagsForPlace =
                   placeRepository.getTopTagsForPlace(p.getId(), TAG_LIMIT);
               List<String> reviewThumbnails =
-                  placeRepository.getReviewThumbnails(p.getId(), THUMBNAIL_LIMIT);
+                  placeRepository.getReviewThumbnails(p.getId(), PREVIEW_THUMBNAIL_LIMIT);
               OpenStatus openStatus = getOpenStatus(p);
               Integer isSoloRecommendedPercent =
                   placeRepository.getRecommendationPercent(p.getId());
@@ -523,5 +535,109 @@ public class SolmapService {
     if (!placeRepository.existsByDistrictOrNeighborhood(regionName, regionName)) {
       throw new CustomException(ErrorCode.REGION_NOT_FOUND);
     }
+  }
+
+  @Transactional(readOnly = true)
+  public PlaceDetailSearchResponse getPlaceDetail(Long id) {
+    Place place =
+        placeRepository
+            .findByPlaceId(id)
+            .orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_EXISTS));
+
+    // 현재 영업중 여부 및 마감 시간 반환
+    OpenStatus openStatus = getOpenStatus(place);
+
+    // 특정 장소의 리뷰들이 선택한 태그를 MOOD, SOLO로 구분하여 조회후 DTO 생성
+    List<TagInfo> moodTagInfo =
+        reviewTagCustomRepository.findTagCountsByPlaceAndType(place.getId(), TagType.MOOD);
+    List<TagInfo> soloTagInfo =
+        reviewTagCustomRepository.findTagCountsByPlaceAndType(place.getId(), TagType.SOLO);
+    PlaceTags placeTags = PlaceTags.of(moodTagInfo, soloTagInfo);
+
+    // 추천 비율 퍼센트 계산과 각 리뷰 썸네일 사진 조회
+    Integer recommendationPercent = placeRepository.getRecommendationPercent(place.getId());
+    List<String> thumbnails =
+        placeRepository.getReviewThumbnails(place.getId(), MAX_PLACE_THUMBNAIL_LIMIT);
+
+    // 장소 상세 정보 DTO 매핑
+    PlaceDetail placeDetail =
+        mapToPlaceDetail(place, openStatus, placeTags, recommendationPercent, thumbnails);
+
+    // 특정 장소 리뷰를 최신순, 최대 INITIAL_REVIEW_LIMIT 조회
+    PageRequest pageRequest = PageRequest.of(0, INITIAL_REVIEW_LIMIT);
+    List<Review> reviews =
+        reviewRepository.findByWithImagesAndUserByPlaceId(place.getId(), pageRequest);
+
+    // 리뷰 조회 DTO 매핑
+    List<ReviewDetail> reviewDetails = mapToReviewDetail(reviews);
+
+    return PlaceDetailSearchResponse.of(placeDetail, reviewDetails);
+  }
+
+  private List<ReviewDetail> mapToReviewDetail(List<Review> reviews) {
+    return reviews.stream()
+        .map(
+            r -> {
+              List<String> photoUrls =
+                  r.getReviewImages().stream().map(ReviewImage::getImageUrl).toList();
+              List<String> tags = r.getReviewTags().stream().map(ReviewTag::getName).toList();
+
+              return ReviewDetail.builder()
+                  .userProfileUrl(r.getUser().getProfileImageUrl())
+                  .userNickname(r.getUser().getNickname())
+                  .createdAt(r.getCreatedAt())
+                  .isRecommended(r.getRecommendation())
+                  .rating(Double.valueOf(r.getRating()))
+                  .content(r.getContent())
+                  .photoUrls(photoUrls)
+                  .tags(tags)
+                  .build();
+            })
+        .toList();
+  }
+
+  private PlaceDetail mapToPlaceDetail(
+      Place place,
+      OpenStatus openStatus,
+      PlaceTags placeTags,
+      Integer recommendationPercent,
+      List<String> thumbnails) {
+
+    return PlaceDetail.builder()
+        .id(place.getId())
+        .name(place.getName())
+        .category(getMainCategory(place))
+        .detailedCategory(place.getTypes())
+        .latitude(place.getLatitude())
+        .longitude(place.getLongitude())
+        .isOpen(openStatus.isOpen())
+        .closingTime(openStatus.closingTime())
+        .openingHours(getOpeningHours(place))
+        .address(place.getAddress())
+        .tags(placeTags)
+        .isSoloRecommended(recommendationPercent)
+        .rating(truncateTo2Decimals(place.getRating())) // 소수점 첫째 자리(0.1 단위)까지 절삭, 두번째 자리 이하 버림
+        .thumbnailUrl(thumbnails)
+        .build();
+  }
+
+  private static Double truncateTo2Decimals(Double num) {
+    if (num == null) {
+      return null;
+    }
+    // 소수점 첫째 자리(0.1 단위)까지만 남기고 그 이하 버림
+    return Math.floor(num * 10) / 10.0;
+  }
+
+  private List<OpeningHour> getOpeningHours(Place place) {
+    return place.getPlaceHours().stream()
+        .map(
+            ph ->
+                OpeningHour.builder()
+                    .dayOfWeek(ph.getDayOfWeek())
+                    .startTime(ph.getStartTime())
+                    .endTime(ph.getEndTime())
+                    .build())
+        .toList();
   }
 }
