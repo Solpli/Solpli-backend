@@ -2,6 +2,7 @@ package com.ilta.solepli.domain.solmark.sollect.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +33,10 @@ public class SolmarkSollectService {
         sollectRepository
             .findById(id)
             .orElseThrow(() -> new CustomException(ErrorCode.SOLLECT_NOT_FOUND));
+
+    if (solmarkSollectRepository.existsBySollectIdAndUser(id, user)) {
+      throw new CustomException(ErrorCode.SOLMARK_SOLLECT_EXISTS);
+    }
 
     SolmarkSollect solmarkSollect = SolmarkSollect.builder().sollect(sollect).user(user).build();
 
@@ -98,6 +103,11 @@ public class SolmarkSollectService {
   @Transactional(readOnly = true)
   public Long getSavedCount(Sollect sollect) {
     return solmarkSollectRepository.countSolmarkSollectsBySollect(sollect);
+  }
+
+  @Transactional(readOnly = true)
+  public List<Long> getPopularSollectIds(int limit) {
+    return solmarkSollectRepository.findPopularSollectIds(PageRequest.of(0, limit));
   }
 
   private List<SolmarkSollectResponse.SollectSearchContent> toResponseContent(

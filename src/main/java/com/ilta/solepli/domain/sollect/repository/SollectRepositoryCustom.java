@@ -14,4 +14,6 @@ public interface SollectRepositoryCustom {
 
   List<SolmarkSollectResponseContent> searchBySolmarkSollect(
       Long cursorId, int size, List<Long> sollectIds);
+
+  List<SollectSearchResponseContent> searchSollectBySollectIds(List<Long> sollectIds);
 }

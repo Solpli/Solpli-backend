@@ -118,6 +118,29 @@ public class SollectRepositoryImpl implements SollectRepositoryCustom {
         .fetch();
   }
 
+  @Override
+  public List<SollectSearchResponseContent> searchSollectBySollectIds(List<Long> sollectIds) {
+    QSollectPlace firstPlace = new QSollectPlace("firstPlace");
+    QPlace firstPlaceInfo = new QPlace("firstPlaceInfo");
+
+    return queryFactory
+        .select(
+            new QSollectSearchResponseContent(
+                sollect.id,
+                sollectContent.imageUrl,
+                sollect.title,
+                firstPlaceInfo.district,
+                firstPlaceInfo.neighborhood))
+        .from(sollect)
+        .join(sollect.sollectPlaces, firstPlace)
+        .on(firstPlace.seq.eq(0))
+        .join(firstPlace.place, firstPlaceInfo)
+        .join(sollect.sollectContents, sollectContent)
+        .on(sollectContent.seq.eq(0L))
+        .where(sollect.id.in(sollectIds))
+        .fetch();
+  }
+
   private BooleanExpression anyMatchKeyword(String keyword) {
     if (keyword == null || keyword.isBlank()) return null;
     return place
