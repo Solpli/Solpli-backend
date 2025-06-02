@@ -26,4 +26,6 @@ public interface SolmarkSollectRepository extends JpaRepository<SolmarkSollect, 
           + "GROUP BY s.sollect.id "
           + "ORDER BY COUNT(s) DESC")
   List<Long> findPopularSollectIds(Pageable pageable);
+
+  boolean existsBySollectIdAndUser(Long sollectId, User user);
 }

@@ -34,6 +34,10 @@ public class SolmarkSollectService {
             .findById(id)
             .orElseThrow(() -> new CustomException(ErrorCode.SOLLECT_NOT_FOUND));
 
+    if (solmarkSollectRepository.existsBySollectIdAndUser(id, user)) {
+      throw new CustomException(ErrorCode.SOLMARK_SOLLECT_EXISTS);
+    }
+
     SolmarkSollect solmarkSollect = SolmarkSollect.builder().sollect(sollect).user(user).build();
 
     solmarkSollectRepository.save(solmarkSollect);
