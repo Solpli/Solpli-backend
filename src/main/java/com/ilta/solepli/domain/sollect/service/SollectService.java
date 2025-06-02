@@ -35,6 +35,7 @@ import com.ilta.solepli.domain.sollect.repository.SollectPlaceRepository;
 import com.ilta.solepli.domain.sollect.repository.SollectRepository;
 import com.ilta.solepli.domain.sollect.repository.SollectRepositoryCustom;
 import com.ilta.solepli.domain.solmark.sollect.repository.SolmarkSollectRepository;
+import com.ilta.solepli.domain.solmark.sollect.service.SolmarkSollectService;
 import com.ilta.solepli.domain.user.entity.User;
 import com.ilta.solepli.global.exception.CustomException;
 import com.ilta.solepli.global.exception.ErrorCode;
@@ -52,9 +53,11 @@ public class SollectService {
   private final RedisTemplate<String, Object> redisTemplate;
   private final SollectRepositoryCustom sollectRepositoryCustom;
   private final SolmarkSollectRepository solmarkSollectRepository;
+  private final SolmarkSollectService solmarkSollectService;
 
   private static final String RECENT_SEARCH_PREFIX = "sollect_recent_search:";
   private static final int MAX_RECENT_SEARCH = 10;
+  private static final int POPULAR_SEARCH_LIMIT = 4;
 
   @Transactional
   public SollectCreateResponse createSollect(SollectCreateRequest request, User user) {
@@ -408,6 +411,22 @@ public class SollectService {
   @Transactional(readOnly = true)
   public SollectPlaceAddPreviewResponse getPlacePreview(Long placeId) {
     return placeRepository.getSollectAddPreview(placeId);
+  }
+
+  @Transactional(readOnly = true)
+  public List<SollectSearchResponse.SollectSearchContent> getPopularSollects(User user) {
+    // 저장 수가 많은 limit개 Sollect ID들
+    List<Long> sollectIds = solmarkSollectService.getPopularSollectIds(POPULAR_SEARCH_LIMIT);
+    // DTO 변환
+    List<SollectSearchResponseContent> rawContents =
+        sollectRepositoryCustom.searchSollectBySollectIds(sollectIds);
+    // 해당 유저의 쏠렉트 저장여부 알기 위해
+    Set<Long> markedSet =
+        (user == null)
+            ? Collections.emptySet()
+            : new HashSet<>(solmarkSollectRepository.findSollectIdsByUser(user));
+
+    return toResponseContent(rawContents, markedSet);
   }
 
   private SollectContent findImage(List<SollectContent> sollectContents, String filename) {

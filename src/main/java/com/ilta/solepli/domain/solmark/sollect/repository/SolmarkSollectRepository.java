@@ -3,6 +3,7 @@ package com.ilta.solepli.domain.solmark.sollect.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,4 +19,11 @@ public interface SolmarkSollectRepository extends JpaRepository<SolmarkSollect, 
   Optional<SolmarkSollect> findBySollectAndUser(Sollect sollect, User user);
 
   Long countSolmarkSollectsBySollect(Sollect sollect);
+
+  @Query(
+      "SELECT s.sollect.id "
+          + "FROM SolmarkSollect s "
+          + "GROUP BY s.sollect.id "
+          + "ORDER BY COUNT(s) DESC")
+  List<Long> findPopularSollectIds(Pageable pageable);
 }
