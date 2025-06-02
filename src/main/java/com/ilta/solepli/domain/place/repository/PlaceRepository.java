@@ -1,6 +1,7 @@
 package com.ilta.solepli.domain.place.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -34,4 +35,12 @@ public interface PlaceRepository extends JpaRepository<Place, Long>, PlaceReposi
   List<Place> findAllByRegionName(@Param("regionName") String regionName);
 
   Boolean existsByDistrictOrNeighborhood(String district, String neighborhood);
+
+  @Query(
+      "SELECT p "
+          + "FROM Place p "
+          + "JOIN FETCH p.placeCategories pc "
+          + "JOIN FETCH pc.category c "
+          + "WHERE p.id = :id")
+  Optional<Place> findByPlaceId(@Param("id") Long id);
 }
