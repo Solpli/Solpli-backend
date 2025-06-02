@@ -1,7 +1,7 @@
 package com.ilta.solepli.domain.place.repository;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -57,8 +57,10 @@ public class PlaceRepositoryImpl implements PlaceRepositoryCustom {
             .fetch();
 
     return reviews.stream()
-        .map(r -> r.getReviewImages().stream().findFirst().map(ReviewImage::getImageUrl))
-        .map(Optional::toString)
+        .map(
+            r ->
+                r.getReviewImages().stream().findFirst().map(ReviewImage::getImageUrl).orElse(null))
+        .filter(Objects::nonNull)
         .toList();
   }
 
