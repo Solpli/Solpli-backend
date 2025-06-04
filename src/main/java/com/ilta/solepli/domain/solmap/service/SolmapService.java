@@ -703,4 +703,17 @@ public class SolmapService {
                     .build())
         .toList();
   }
+
+  public List<MarkerResponse> getMarkersByRelatedSearch(
+      List<Long> ids, CustomUserDetails customUserDetails) {
+    // 사용자 로그인, 비로그인 판별
+    User user = SecurityUtil.getUser(customUserDetails);
+
+    List<Place> places = placeRepository.findByPlace_IdIn(ids);
+
+    // 쏠마크한 PlaceId 리스트 조회
+    Set<Long> solmarkedPlaceIds = getSolmarkedPlaceIds(user, places);
+
+    return places.stream().map(p -> getMarkerResponse(p, solmarkedPlaceIds)).toList();
+  }
 }

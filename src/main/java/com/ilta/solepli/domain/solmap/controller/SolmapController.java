@@ -150,4 +150,14 @@ public class SolmapController {
 
     return ResponseEntity.ok().body(SuccessResponse.successWithData(response));
   }
+
+  @Operation(summary = "연관 검색어 결과 장소 마커 정보 조회 API", description = "연관 검색어 결과 장소 마커 정보 조회 API 입니다.")
+  @GetMapping("/markers/search/related")
+  public ResponseEntity<SuccessResponse<List<MarkerResponse>>> getMarkersByRelatedSearch(
+      @RequestParam List<Long> ids, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+    List<MarkerResponse> response = solmapService.getMarkersByRelatedSearch(ids, customUserDetails);
+
+    return ResponseEntity.ok().body(SuccessResponse.successWithData(response));
+  }
 }
