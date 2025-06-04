@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import com.ilta.solepli.domain.category.entity.QCategory;
 import com.ilta.solepli.domain.place.entity.QPlace;
 import com.ilta.solepli.domain.place.entity.mapping.QPlaceCategory;
+import com.ilta.solepli.domain.sollect.dto.PopularSollectResponseContent;
+import com.ilta.solepli.domain.sollect.dto.QPopularSollectResponseContent;
 import com.ilta.solepli.domain.sollect.dto.QSollectSearchResponseContent;
 import com.ilta.solepli.domain.sollect.dto.SollectSearchResponseContent;
 import com.ilta.solepli.domain.sollect.entity.QSollect;
@@ -119,16 +121,17 @@ public class SollectRepositoryImpl implements SollectRepositoryCustom {
   }
 
   @Override
-  public List<SollectSearchResponseContent> searchSollectBySollectIds(List<Long> sollectIds) {
+  public List<PopularSollectResponseContent> searchSollectBySollectIds(List<Long> sollectIds) {
     QSollectPlace firstPlace = new QSollectPlace("firstPlace");
     QPlace firstPlaceInfo = new QPlace("firstPlaceInfo");
 
     return queryFactory
         .select(
-            new QSollectSearchResponseContent(
+            new QPopularSollectResponseContent(
                 sollect.id,
                 sollectContent.imageUrl,
                 sollect.title,
+                firstPlaceInfo.name,
                 firstPlaceInfo.district,
                 firstPlaceInfo.neighborhood))
         .from(sollect)

@@ -16,5 +16,15 @@ public record SollectSearchResponse(List<SollectSearchContent> contents, CursorI
       Boolean isMarked) {}
 
   @Builder
+  public record PopularSollectContent(
+      Long sollectId,
+      String thumbnailImage,
+      String title,
+      String placeName,
+      String district,
+      String neighborhood,
+      Boolean isMarked) {}
+
+  @Builder
   public record CursorInfo(Long nextCursorId, boolean hasNext) {}
 }
