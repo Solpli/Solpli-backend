@@ -43,4 +43,14 @@ public interface PlaceRepository extends JpaRepository<Place, Long>, PlaceReposi
           + "JOIN FETCH pc.category c "
           + "WHERE p.id = :id")
   Optional<Place> findByPlaceId(@Param("id") Long id);
+
+  @Query(
+      """
+    SELECT p
+    FROM Place p
+    JOIN FETCH p.placeCategories pc
+    JOIN FETCH pc.category c
+    WHERE p.id IN :ids
+""")
+  List<Place> findByPlace_IdIn(List<Long> ids);
 }

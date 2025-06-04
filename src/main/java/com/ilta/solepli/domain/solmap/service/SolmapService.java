@@ -703,4 +703,57 @@ public class SolmapService {
                     .build())
         .toList();
   }
+
+  @Transactional(readOnly = true)
+  public List<MarkerResponse> getMarkersByRelatedSearch(
+      List<Long> ids, CustomUserDetails customUserDetails) {
+    // 사용자 로그인, 비로그인 판별
+    User user = SecurityUtil.getUser(customUserDetails);
+
+    List<Place> places = placeRepository.findByPlace_IdIn(ids);
+
+    // 쏠마크한 PlaceId 리스트 조회
+    Set<Long> solmarkedPlaceIds = getSolmarkedPlaceIds(user, places);
+
+    return places.stream().map(p -> getMarkerResponse(p, solmarkedPlaceIds)).toList();
+  }
+
+  @Transactional(readOnly = true)
+  public PlaceSearchPreviewResponse getPlacePreviewByRelatedSearch(
+      List<Long> ids, Long cursorId, int limit) {
+
+    // 커서 기준으로 시작 인덱스 계산 (없으면 0)
+    int startIdx = 0;
+    if (cursorId != null) {
+      int idx = ids.indexOf(cursorId);
+      // cursorId가 ids에 없을 때 -1이 반환됨 -> 그 경우 startIdx는 0 유지
+      if (idx != -1) {
+        startIdx = idx + 1;
+      }
+    }
+    // limit만큼 끝 인덱스 계산 (리스트 범위 초과 방지)
+    int endIdx = Math.min(startIdx + limit, ids.size());
+
+    // 현재 페이지에 해당하는 placeId만 추출
+    List<Long> placeIds = ids.subList(startIdx, endIdx);
+
+    // placeId로 Place 조회 (순서 보장 X)
+    List<Place> places = placeRepository.findByPlace_IdIn(placeIds);
+
+    // 조회 결과를 placeIds 순서대로 정렬
+    Map<Long, Place> placeMap =
+        places.stream().collect(Collectors.toMap(Place::getId, Function.identity()));
+    List<Place> orderedPlaces = placeIds.stream().map(placeMap::get).toList();
+
+    // PlacePreviewDetail DTO로 매핑
+    List<PlacePreviewDetail> placePreviewDetails = mapToPreviewDetails(orderedPlaces, limit);
+
+    // 더 불러올 데이터가 있으면 다음 커서 id, 없으면 null
+    Long nextCursor = (endIdx < ids.size()) ? ids.get(endIdx - 1) : null;
+
+    return PlaceSearchPreviewResponse.builder()
+        .places(placePreviewDetails)
+        .nextCursor(nextCursor)
+        .build();
+  }
 }
