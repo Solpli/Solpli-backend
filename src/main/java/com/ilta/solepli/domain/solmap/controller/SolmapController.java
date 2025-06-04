@@ -160,4 +160,17 @@ public class SolmapController {
 
     return ResponseEntity.ok().body(SuccessResponse.successWithData(response));
   }
+
+  @Operation(summary = "연관 검색어 결과 장소 리스트 조회 API", description = "연관 검색어 결과 장소 리스트 조회 API 입니다.")
+  @GetMapping("/places/search/related")
+  public ResponseEntity<SuccessResponse<PlaceSearchPreviewResponse>> getPlacePreviewByRelatedSearch(
+      @RequestParam List<Long> ids,
+      @RequestParam(required = false) Long cursorId,
+      @RequestParam(required = false, defaultValue = "5") int limit) {
+
+    PlaceSearchPreviewResponse response =
+        solmapService.getPlacePreviewByRelatedSearch(ids, cursorId, limit);
+
+    return ResponseEntity.ok().body(SuccessResponse.successWithData(response));
+  }
 }
