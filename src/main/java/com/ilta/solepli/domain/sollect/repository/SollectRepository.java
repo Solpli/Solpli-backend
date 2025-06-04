@@ -16,6 +16,6 @@ public interface SollectRepository extends JpaRepository<Sollect, Long> {
   @Query("SELECT s FROM Sollect s WHERE s.id = :id AND s.deletedAt IS NULL")
   Optional<Sollect> findWithContentById(@Param("id") Long id);
 
-  @Query("select s.id from Sollect s where s.user = :user")
+  @Query("select s.id from Sollect s where s.user = :user AND s.deletedAt IS NULL")
   List<Long> findSollectIdsByUser(@Param("user") User user);
 }

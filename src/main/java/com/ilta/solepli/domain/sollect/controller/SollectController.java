@@ -32,10 +32,12 @@ import com.ilta.solepli.domain.sollect.dto.response.SollectCreateResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectDetailResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectPlaceAddPreviewResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectSearchResponse;
+import com.ilta.solepli.domain.sollect.dto.response.SollectSearchResponse.PopularSollectContent;
 import com.ilta.solepli.domain.sollect.service.SollectService;
 import com.ilta.solepli.domain.user.entity.User;
 import com.ilta.solepli.domain.user.util.CustomUserDetails;
 import com.ilta.solepli.global.response.SuccessResponse;
+import com.ilta.solepli.global.util.SecurityUtil;
 
 @RestController
 @RequiredArgsConstructor
@@ -151,10 +153,7 @@ public class SollectController {
       @RequestParam(required = false) String keyword,
       @RequestParam(required = false) String category) {
 
-    User user = null;
-    if (customUserDetails != null) {
-      user = customUserDetails.user();
-    }
+    User user = SecurityUtil.getUser(customUserDetails);
 
     SollectSearchResponse searchContents =
         sollectService.getSearchContents(user, cursorId, size, keyword, category);
@@ -186,16 +185,12 @@ public class SollectController {
 
   @Operation(summary = "인기 쏠렉트 조회 API", description = "인기(저장 수가 많은) 쏠렉트를 조회하는 API 입니다.")
   @GetMapping("/popular")
-  public ResponseEntity<SuccessResponse<List<SollectSearchResponse.SollectSearchContent>>>
-      getPopularSollects(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+  public ResponseEntity<SuccessResponse<List<PopularSollectContent>>> getPopularSollects(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
-    User user = null;
-    if (customUserDetails != null) {
-      user = customUserDetails.user();
-    }
+    User user = SecurityUtil.getUser(customUserDetails);
 
-    List<SollectSearchResponse.SollectSearchContent> popularSollects =
-        sollectService.getPopularSollects(user);
+    List<PopularSollectContent> popularSollects = sollectService.getPopularSollects(user);
 
     return ResponseEntity.ok(SuccessResponse.successWithData(popularSollects));
   }

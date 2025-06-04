@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 
 import com.ilta.solepli.domain.place.entity.Place;
 import com.ilta.solepli.domain.place.repository.PlaceRepository;
+import com.ilta.solepli.domain.sollect.dto.PopularSollectResponseContent;
 import com.ilta.solepli.domain.sollect.dto.SollectSearchResponseContent;
 import com.ilta.solepli.domain.sollect.dto.request.SollectCreateRequest;
 import com.ilta.solepli.domain.sollect.dto.request.SollectUpdateRequest;
@@ -27,6 +28,7 @@ import com.ilta.solepli.domain.sollect.dto.response.SollectCreateResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectDetailResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectPlaceAddPreviewResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectSearchResponse;
+import com.ilta.solepli.domain.sollect.dto.response.SollectSearchResponse.PopularSollectContent;
 import com.ilta.solepli.domain.sollect.entity.ContentType;
 import com.ilta.solepli.domain.sollect.entity.Sollect;
 import com.ilta.solepli.domain.sollect.entity.SollectContent;
@@ -415,20 +417,20 @@ public class SollectService {
   }
 
   @Transactional(readOnly = true)
-  public List<SollectSearchResponse.SollectSearchContent> getPopularSollects(User user) {
+  public List<SollectSearchResponse.PopularSollectContent> getPopularSollects(User user) {
     // 저장 수가 많은 limit개 Sollect ID들
     List<Long> sollectIds = solmarkSollectService.getPopularSollectIds(POPULAR_SEARCH_LIMIT);
 
     // 정렬되지 않은 DTO 리스트
-    List<SollectSearchResponseContent> rawContents =
+    List<PopularSollectResponseContent> rawContents =
         sollectRepositoryCustom.searchSollectBySollectIds(sollectIds);
 
     // 인기순 정렬 보정
-    Map<Long, SollectSearchResponseContent> contentMap =
+    Map<Long, PopularSollectResponseContent> contentMap =
         rawContents.stream()
-            .collect(Collectors.toMap(SollectSearchResponseContent::sollectId, c -> c));
+            .collect(Collectors.toMap(PopularSollectResponseContent::sollectId, c -> c));
 
-    List<SollectSearchResponseContent> sortedContents =
+    List<PopularSollectResponseContent> sortedContents =
         sollectIds.stream()
             .map(contentMap::get)
             .filter(Objects::nonNull) // 혹시 없는 경우 대비
@@ -440,7 +442,7 @@ public class SollectService {
             ? Collections.emptySet()
             : new HashSet<>(solmarkSollectRepository.findSollectIdsByUser(user));
 
-    return toResponseContent(sortedContents, markedSet);
+    return toResponsePopularContent(sortedContents, markedSet);
   }
 
   private SollectContent findImage(List<SollectContent> sollectContents, String filename) {
@@ -480,6 +482,23 @@ public class SollectService {
                     .sollectId(content.sollectId())
                     .thumbnailImage(content.thumbnailImage())
                     .title(content.title())
+                    .district(content.district())
+                    .neighborhood(content.neighborhood())
+                    .isMarked(markedSollectIds.contains(content.sollectId()))
+                    .build())
+        .toList();
+  }
+
+  private List<SollectSearchResponse.PopularSollectContent> toResponsePopularContent(
+      List<PopularSollectResponseContent> contents, Set<Long> markedSollectIds) {
+    return contents.stream()
+        .map(
+            content ->
+                PopularSollectContent.builder()
+                    .sollectId(content.sollectId())
+                    .thumbnailImage(content.thumbnailImage())
+                    .title(content.title())
+                    .placeName(content.placeName())
                     .district(content.district())
                     .neighborhood(content.neighborhood())
                     .isMarked(markedSollectIds.contains(content.sollectId()))

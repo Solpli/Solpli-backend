@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import com.ilta.solepli.domain.category.entity.QCategory;
 import com.ilta.solepli.domain.place.entity.QPlace;
 import com.ilta.solepli.domain.place.entity.mapping.QPlaceCategory;
+import com.ilta.solepli.domain.sollect.dto.PopularSollectResponseContent;
+import com.ilta.solepli.domain.sollect.dto.QPopularSollectResponseContent;
 import com.ilta.solepli.domain.sollect.dto.QSollectSearchResponseContent;
 import com.ilta.solepli.domain.sollect.dto.SollectSearchResponseContent;
 import com.ilta.solepli.domain.sollect.entity.QSollect;
@@ -54,6 +56,8 @@ public class SollectRepositoryImpl implements SollectRepositoryCustom {
     BooleanExpression cursorCondition = cursorLessThan(cursorId);
     if (cursorCondition != null) sollectCondition.and(cursorCondition);
 
+    sollectCondition.and(sollect.deletedAt.isNull());
+
     // ID 추출
     List<Long> sollectIds =
         queryFactory
@@ -84,7 +88,7 @@ public class SollectRepositoryImpl implements SollectRepositoryCustom {
         .join(firstPlace.place, firstPlaceInfo)
         .join(sollect.sollectContents, sollectContent)
         .on(sollectContent.seq.eq(0L))
-        .where(sollect.id.in(sollectIds))
+        .where(sollect.id.in(sollectIds), sollect.deletedAt.isNull())
         .orderBy(sollect.id.desc())
         .fetch();
   }
@@ -112,23 +116,24 @@ public class SollectRepositoryImpl implements SollectRepositoryCustom {
         .join(firstPlace.place, firstPlaceInfo)
         .join(sollect.sollectContents, sollectContent)
         .on(sollectContent.seq.eq(0L))
-        .where(sollect.id.in(sollectIds), cursorCondition)
+        .where(sollect.id.in(sollectIds), sollect.deletedAt.isNull(), cursorCondition)
         .orderBy(sollect.id.desc())
         .limit(size + 1)
         .fetch();
   }
 
   @Override
-  public List<SollectSearchResponseContent> searchSollectBySollectIds(List<Long> sollectIds) {
+  public List<PopularSollectResponseContent> searchSollectBySollectIds(List<Long> sollectIds) {
     QSollectPlace firstPlace = new QSollectPlace("firstPlace");
     QPlace firstPlaceInfo = new QPlace("firstPlaceInfo");
 
     return queryFactory
         .select(
-            new QSollectSearchResponseContent(
+            new QPopularSollectResponseContent(
                 sollect.id,
                 sollectContent.imageUrl,
                 sollect.title,
+                firstPlaceInfo.name,
                 firstPlaceInfo.district,
                 firstPlaceInfo.neighborhood))
         .from(sollect)
@@ -137,7 +142,7 @@ public class SollectRepositoryImpl implements SollectRepositoryCustom {
         .join(firstPlace.place, firstPlaceInfo)
         .join(sollect.sollectContents, sollectContent)
         .on(sollectContent.seq.eq(0L))
-        .where(sollect.id.in(sollectIds))
+        .where(sollect.id.in(sollectIds), sollect.deletedAt.isNull())
         .fetch();
   }
 
