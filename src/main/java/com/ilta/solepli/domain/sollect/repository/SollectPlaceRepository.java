@@ -23,4 +23,7 @@ public interface SollectPlaceRepository extends JpaRepository<SollectPlace, Long
       ORDER BY sp.seq ASC
       """)
   List<SollectPlace> findBySollectIdWithPlace(@Param("sollectId") Long sollectId);
+
+  @Query("SELECT sp.sollect.id FROM SollectPlace sp WHERE sp.place.id = :placeId")
+  List<Long> findSollectIdsByPlaceId(@Param("placeId") Long placeId);
 }
