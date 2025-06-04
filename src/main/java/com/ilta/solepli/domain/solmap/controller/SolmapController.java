@@ -31,12 +31,14 @@ public class SolmapController {
       @RequestParam Double swLng,
       @RequestParam Double neLat,
       @RequestParam Double neLng,
-      @RequestParam(required = false) String category) {
+      @RequestParam(required = false) String category,
+      @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
     return ResponseEntity.ok()
         .body(
             SuccessResponse.successWithData(
-                solmapService.getMarkersByViewport(swLat, swLng, neLat, neLng, category)));
+                solmapService.getMarkersByViewport(
+                    swLat, swLng, neLat, neLng, category, customUserDetails)));
   }
 
   @Operation(summary = "최근 검색어 저장 API", description = "최근 검색어를 저장하는 API 입니다.")
@@ -99,10 +101,13 @@ public class SolmapController {
   @Operation(summary = "연관 검색어 조회 API", description = "연관 검색어 조회 API 입니다.")
   @GetMapping("search/related")
   public ResponseEntity<SuccessResponse<List<RelatedSearchResponse>>> getRelatedSearch(
-      @RequestParam String keyword, @RequestParam Double userLat, @RequestParam Double userLng) {
+      @RequestParam String keyword,
+      @RequestParam Double userLat,
+      @RequestParam Double userLng,
+      @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
     List<RelatedSearchResponse> response =
-        solmapService.getRelatedSearch(keyword, userLat, userLng);
+        solmapService.getRelatedSearch(keyword, userLat, userLng, customUserDetails);
 
     return ResponseEntity.ok(SuccessResponse.successWithData(response));
   }
@@ -110,9 +115,10 @@ public class SolmapController {
   @Operation(summary = "지역 검색 마커 정보 조회 API", description = "지역 검색 마커 정보 조회 API 입니다.")
   @GetMapping("/region/{regionName}/markers")
   public ResponseEntity<SuccessResponse<List<MarkerResponse>>> getMarkersByRegion(
-      @PathVariable String regionName) {
+      @PathVariable String regionName,
+      @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
-    List<MarkerResponse> response = solmapService.getMarkersByRegion(regionName);
+    List<MarkerResponse> response = solmapService.getMarkersByRegion(regionName, customUserDetails);
 
     return ResponseEntity.ok().body(SuccessResponse.successWithData(response));
   }

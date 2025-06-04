@@ -6,4 +6,10 @@ import com.ilta.solepli.domain.solmap.entity.SearchType;
 
 @Builder
 public record RelatedSearchResponse(
-    Long id, SearchType type, String name, String address, Distance distance, String category) {}
+    Long id,
+    SearchType type,
+    String name,
+    String address,
+    Distance distance,
+    String category,
+    Boolean isMarked) {}

@@ -4,6 +4,7 @@ import static com.ilta.solepli.global.util.OpenStatusUtil.getOpenStatus;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +27,7 @@ import com.ilta.solepli.domain.place.entity.QPlaceHour;
 import com.ilta.solepli.domain.place.entity.mapping.PlaceCategory;
 import com.ilta.solepli.domain.place.entity.mapping.QPlaceCategory;
 import com.ilta.solepli.domain.place.repository.PlaceRepository;
+import com.ilta.solepli.domain.place.repository.SolmarkPlaceRepository;
 import com.ilta.solepli.domain.review.entity.Review;
 import com.ilta.solepli.domain.review.entity.mapping.ReviewImage;
 import com.ilta.solepli.domain.review.entity.mapping.ReviewTag;
@@ -33,10 +35,14 @@ import com.ilta.solepli.domain.review.repository.ReviewRepository;
 import com.ilta.solepli.domain.review.repository.ReviewTagCustomRepository;
 import com.ilta.solepli.domain.solmap.dto.*;
 import com.ilta.solepli.domain.solmap.entity.SearchType;
+import com.ilta.solepli.domain.solmark.place.entity.SolmarkPlace;
 import com.ilta.solepli.domain.tag.entity.TagType;
+import com.ilta.solepli.domain.user.entity.User;
+import com.ilta.solepli.domain.user.util.CustomUserDetails;
 import com.ilta.solepli.global.dto.OpenStatus;
 import com.ilta.solepli.global.exception.CustomException;
 import com.ilta.solepli.global.exception.ErrorCode;
+import com.ilta.solepli.global.util.SecurityUtil;
 
 @Slf4j
 @Service
@@ -47,6 +53,7 @@ public class SolmapService {
   private final CategoryRepository categoryRepository;
   private final ReviewTagCustomRepository reviewTagCustomRepository;
   private final ReviewRepository reviewRepository;
+  private final SolmarkPlaceRepository solmarkPlaceRepository;
 
   private final RedisTemplate<String, Object> redisTemplate;
   private final JPAQueryFactory jpaQueryFactory;
@@ -65,18 +72,29 @@ public class SolmapService {
 
   @Transactional(readOnly = true)
   public List<MarkerResponse> getMarkersByViewport(
-      Double swLat, Double swLng, Double neLat, Double neLng, String category) {
+      Double swLat,
+      Double swLng,
+      Double neLat,
+      Double neLng,
+      String category,
+      CustomUserDetails customUserDetails) {
 
     // 좌표, 카테고리 유효성 검증
     validViewport(swLat, swLng, neLat, neLng);
     validCategory(category);
 
+    // 사용자 로그인, 비로그인 확인
+    User user = SecurityUtil.getUser(customUserDetails);
+
     // 좌표에 속한 장소 조회
-    List<Place> place =
+    List<Place> places =
         placeRepository.findInViewportWithOptionalCategory(swLat, swLng, neLat, neLng, category);
 
+    // 쏠마크한 PlaceId 리스트 조회
+    Set<Long> solmarkedPlaceIds = getSolmarkedPlaceIds(user, places);
+
     // 마커 관련 데이터 리스트
-    return place.stream().map(p1 -> toMarkerDetail(p1, category)).toList();
+    return places.stream().map(p -> toMarkerDetail(p, category, solmarkedPlaceIds)).toList();
   }
 
   private void validViewport(Double swLat, Double swLng, Double neLat, Double neLng) {
@@ -91,7 +109,8 @@ public class SolmapService {
     }
   }
 
-  private MarkerResponse toMarkerDetail(Place p, String selectedCategory) {
+  private MarkerResponse toMarkerDetail(
+      Place p, String selectedCategory, Set<Long> solmarkedPlaceIds) {
     String category;
 
     if (selectedCategory != null) {
@@ -105,11 +124,14 @@ public class SolmapService {
               .orElseThrow(() -> new CustomException(ErrorCode.UNCATEGORIZED));
     }
 
+    boolean isMarked = solmarkedPlaceIds.contains(p.getId());
+
     return MarkerResponse.builder()
         .id(p.getId())
         .latitude(p.getLatitude())
         .longitude(p.getLongitude())
         .category(category)
+        .isMarked(isMarked)
         .build();
   }
 
@@ -311,13 +333,16 @@ public class SolmapService {
 
   @Transactional(readOnly = true)
   public List<RelatedSearchResponse> getRelatedSearch(
-      String keyword, Double userLat, Double userLng) {
+      String keyword, Double userLat, Double userLng, CustomUserDetails customUserDetails) {
+    // 로그인, 비로그인 판별
+    User user = SecurityUtil.getUser(customUserDetails);
     // 구 검색 결과 스트림
     Stream<RelatedSearchResponse> placesDistrictLike = getDistrictsByKeyword(keyword);
     // 동 검색 결과 스트림
     Stream<RelatedSearchResponse> placesNeighborhoodLike = getNeighborhoodsByKeyword(keyword);
     // 장소 검색 결과 스트림 (거리순)
-    Stream<RelatedSearchResponse> placesNameLike = getPlacesByKeyword(keyword, userLat, userLng);
+    Stream<RelatedSearchResponse> placesNameLike =
+        getPlacesByKeyword(keyword, userLat, userLng, user);
 
     // 스트림을 합쳐서, 앞에서부터 MAX개만 리스트로 수집
     return Stream.of(placesDistrictLike, placesNeighborhoodLike, placesNameLike)
@@ -352,31 +377,62 @@ public class SolmapService {
 
   /** keyword가 포함된 장소를 거리순으로 조회하여 DTO로 매핑한 스트림을 반환. */
   private Stream<RelatedSearchResponse> getPlacesByKeyword(
-      String keyword, Double userLat, Double userLng) {
+      String keyword, Double userLat, Double userLng, User user) {
+    // 장소 조회
+    List<Place> places = getPlaces(keyword, userLat, userLng);
+    // 쏠마크한 PlaceId 리스트 조회
+    Set<Long> solmarkedPlaceIds = getSolmarkedPlaceIds(user, places);
+
+    return places.stream()
+        .map(
+            p -> {
+              // 각 장소 쏠마크 여부 판별
+              boolean isMarked = solmarkedPlaceIds.contains(p.getId());
+
+              return RelatedSearchResponse.builder()
+                  .id(p.getId())
+                  .type(SearchType.PLACE)
+                  .name(p.getName())
+                  .address(p.getAddress())
+                  // 미터 단위 계산 후, m/km DTO로 변환
+                  .distance(
+                      Distance.fromMeter(
+                          (int)
+                              calculateDistance(
+                                  userLat, userLng, p.getLatitude(), p.getLongitude())))
+                  .category(getMainCategory(p))
+                  .isMarked(isMarked)
+                  .build();
+            });
+  }
+
+  private Set<Long> getSolmarkedPlaceIds(User user, List<Place> places) {
+    // 비로그인이거나 조회된 장소가 없으면 빈 Set 반환
+    if (user == null & places.isEmpty()) {
+      return Collections.emptySet();
+    }
+
+    List<Long> placeIds = places.stream().map(Place::getId).toList();
+
+    // 쏠마크 장소 조회
+    List<SolmarkPlace> solmarkPlaces =
+        solmarkPlaceRepository.findAllByUserAndPlace_IdIn(user, placeIds);
+
+    // 쏠마크 장소 ID Set 반환
+    return solmarkPlaces.stream().map(sp -> sp.getPlace().getId()).collect(Collectors.toSet());
+  }
+
+  private List<Place> getPlaces(String keyword, Double userLat, Double userLng) {
     return jpaQueryFactory
         .select(p)
         .from(p)
         .join(p.placeCategories, pc)
+        .fetchJoin()
         .join(pc.category, c)
+        .fetchJoin()
         .where(p.name.contains(keyword))
         .orderBy(distance(userLat, userLng).asc())
-        .fetch()
-        .stream()
-        .map(
-            p ->
-                RelatedSearchResponse.builder()
-                    .id(p.getId())
-                    .type(SearchType.PLACE)
-                    .name(p.getName())
-                    .address(p.getAddress())
-                    // 미터 단위 계산 후, m/km DTO로 변환
-                    .distance(
-                        Distance.fromMeter(
-                            (int)
-                                calculateDistance(
-                                    userLat, userLng, p.getLatitude(), p.getLongitude())))
-                    .category(getMainCategory(p))
-                    .build());
+        .fetch();
   }
 
   /** 장소에 연결된 카테고리 중 첫 번째(대표) 카테고리명을 반환. */
@@ -402,25 +458,32 @@ public class SolmapService {
     return EARTH_RADIUS * c; // 결과: 미터(m) 단위 거리
   }
 
-  public List<MarkerResponse> getMarkersByRegion(String regionName) {
+  public List<MarkerResponse> getMarkersByRegion(
+      String regionName, CustomUserDetails customUserDetails) {
+
+    User user = SecurityUtil.getUser(customUserDetails);
     // regionName과 동일한 구, 동 장소 조회
-    return getMarkerByRegion(regionName);
+    return getMarkerByRegion(regionName, user);
   }
 
-  private List<MarkerResponse> getMarkerByRegion(String regionName) {
+  private List<MarkerResponse> getMarkerByRegion(String regionName, User user) {
+    List<Place> places = placeRepository.findAllByRegionName(regionName);
+    // 쏠마크한 PlaceId 리스트 조회
+    Set<Long> solmarkedPlaceIds = getSolmarkedPlaceIds(user, places);
+
     // 조회된 각 장소를 DTO 변환
-    return placeRepository.findAllByRegionName(regionName).stream()
-        .map(this::getMarkerResponse)
-        .toList();
+    return places.stream().map(p -> getMarkerResponse(p, solmarkedPlaceIds)).toList();
   }
 
-  private MarkerResponse getMarkerResponse(Place p) {
+  private MarkerResponse getMarkerResponse(Place p, Set<Long> solmarkedPlaceIds) {
+    boolean isMarked = solmarkedPlaceIds.contains(p.getId());
     // 응답 DTO 변환
     return MarkerResponse.builder()
         .id(p.getId())
         .latitude(p.getLatitude())
         .longitude(p.getLongitude())
         .category(getMainCategory(p))
+        .isMarked(isMarked)
         .build();
   }
 
