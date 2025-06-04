@@ -56,6 +56,8 @@ public class SollectRepositoryImpl implements SollectRepositoryCustom {
     BooleanExpression cursorCondition = cursorLessThan(cursorId);
     if (cursorCondition != null) sollectCondition.and(cursorCondition);
 
+    sollectCondition.and(sollect.deletedAt.isNull());
+
     // ID 추출
     List<Long> sollectIds =
         queryFactory
@@ -86,7 +88,7 @@ public class SollectRepositoryImpl implements SollectRepositoryCustom {
         .join(firstPlace.place, firstPlaceInfo)
         .join(sollect.sollectContents, sollectContent)
         .on(sollectContent.seq.eq(0L))
-        .where(sollect.id.in(sollectIds))
+        .where(sollect.id.in(sollectIds), sollect.deletedAt.isNull())
         .orderBy(sollect.id.desc())
         .fetch();
   }
@@ -114,7 +116,7 @@ public class SollectRepositoryImpl implements SollectRepositoryCustom {
         .join(firstPlace.place, firstPlaceInfo)
         .join(sollect.sollectContents, sollectContent)
         .on(sollectContent.seq.eq(0L))
-        .where(sollect.id.in(sollectIds), cursorCondition)
+        .where(sollect.id.in(sollectIds), sollect.deletedAt.isNull(), cursorCondition)
         .orderBy(sollect.id.desc())
         .limit(size + 1)
         .fetch();
@@ -140,7 +142,7 @@ public class SollectRepositoryImpl implements SollectRepositoryCustom {
         .join(firstPlace.place, firstPlaceInfo)
         .join(sollect.sollectContents, sollectContent)
         .on(sollectContent.seq.eq(0L))
-        .where(sollect.id.in(sollectIds))
+        .where(sollect.id.in(sollectIds), sollect.deletedAt.isNull())
         .fetch();
   }
 
