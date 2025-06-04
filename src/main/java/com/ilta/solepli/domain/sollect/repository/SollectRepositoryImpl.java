@@ -149,10 +149,12 @@ public class SollectRepositoryImpl implements SollectRepositoryCustom {
   @Override
   public List<SollectSearchResponseContent> searchSollectBySollectIdsAndCursor(
       Long cursorId, int size, List<Long> sollectIds) {
+
     BooleanBuilder sollectCondition = new BooleanBuilder();
     BooleanExpression cursorCondition = cursorLessThan(cursorId);
     if (cursorCondition != null) sollectCondition.and(cursorCondition);
 
+    sollectCondition.and(sollect.id.in(sollectIds));
     sollectCondition.and(sollect.deletedAt.isNull());
 
     // DTO 반환
@@ -173,8 +175,9 @@ public class SollectRepositoryImpl implements SollectRepositoryCustom {
         .join(firstPlace.place, firstPlaceInfo)
         .join(sollect.sollectContents, sollectContent)
         .on(sollectContent.seq.eq(0L))
-        .where(sollect.id.in(sollectIds), sollect.deletedAt.isNull())
+        .where(sollectCondition)
         .orderBy(sollect.id.desc())
+        .limit(size + 1)
         .fetch();
   }
 
