@@ -704,6 +704,7 @@ public class SolmapService {
         .toList();
   }
 
+  @Transactional(readOnly = true)
   public List<MarkerResponse> getMarkersByRelatedSearch(
       List<Long> ids, CustomUserDetails customUserDetails) {
     // 사용자 로그인, 비로그인 판별
