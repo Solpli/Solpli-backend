@@ -1,10 +1,11 @@
-package com.ilta.solepli.domain.place.entity;
+package com.ilta.solepli.domain.solmark.place.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import com.ilta.solepli.domain.place.entity.Place;
 import com.ilta.solepli.domain.user.entity.User;
 import com.ilta.solepli.global.entity.Timestamped;
 
