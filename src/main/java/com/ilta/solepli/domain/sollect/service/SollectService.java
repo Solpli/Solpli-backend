@@ -445,6 +445,39 @@ public class SollectService {
     return toResponsePopularContent(sortedContents, markedSet);
   }
 
+  @Transactional(readOnly = true)
+  public SollectSearchResponse getPlaceRelatedSollect(
+      User user, Long placeId, Long cursorId, int size) {
+
+    // 해당 place를 포함하는 Sollect ID들
+    List<Long> sollectIds = sollectPlaceRepository.findSollectIdsByPlaceId(placeId);
+
+    List<SollectSearchResponseContent> rawContents =
+        sollectRepositoryCustom.searchSollectBySollectIdsAndCursor(cursorId, size, sollectIds);
+
+    boolean hasNext = rawContents.size() > size;
+    if (hasNext) rawContents.remove(size); // 커서 페이징이므로 초과 1개 제거
+
+    Set<Long> markedSet =
+        (user == null)
+            ? Collections.emptySet()
+            : new HashSet<>(solmarkSollectRepository.findSollectIdsByUser(user));
+
+    List<SollectSearchResponse.SollectSearchContent> converted =
+        toResponseContent(rawContents, markedSet);
+
+    Long nextCursorId = hasNext ? converted.get(converted.size() - 1).sollectId() : null;
+
+    return SollectSearchResponse.builder()
+        .contents(converted)
+        .cursorInfo(
+            SollectSearchResponse.CursorInfo.builder()
+                .nextCursorId(nextCursorId)
+                .hasNext(hasNext)
+                .build())
+        .build();
+  }
+
   private SollectContent findImage(List<SollectContent> sollectContents, String filename) {
     for (SollectContent sollectContent : sollectContents) {
       if (sollectContent.getType().equals(ContentType.IMAGE)

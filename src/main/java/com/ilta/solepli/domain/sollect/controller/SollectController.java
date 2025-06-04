@@ -194,4 +194,20 @@ public class SollectController {
 
     return ResponseEntity.ok(SuccessResponse.successWithData(popularSollects));
   }
+
+  @Operation(summary = "장소 관련 쏠렉트 조회 API", description = "해당 장소를 포함하고 있는 쏠렉트를 조회하는 API 입니다.")
+  @GetMapping("/related/{placeId}")
+  public ResponseEntity<SuccessResponse<SollectSearchResponse>> getPlaceRelatedSollects(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails,
+      @PathVariable Long placeId,
+      @RequestParam(required = false) Long cursorId,
+      @RequestParam(defaultValue = "6") int size) {
+
+    User user = SecurityUtil.getUser(customUserDetails);
+
+    SollectSearchResponse relatedSollects =
+        sollectService.getPlaceRelatedSollect(user, placeId, cursorId, size);
+
+    return ResponseEntity.ok(SuccessResponse.successWithData(relatedSollects));
+  }
 }
