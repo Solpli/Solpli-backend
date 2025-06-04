@@ -12,4 +12,4 @@ public record RelatedSearchResponse(
     String address,
     Distance distance,
     String category,
-    Boolean solmark) {}
+    Boolean isMarked) {}

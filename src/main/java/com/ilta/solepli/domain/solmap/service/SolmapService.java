@@ -124,14 +124,14 @@ public class SolmapService {
               .orElseThrow(() -> new CustomException(ErrorCode.UNCATEGORIZED));
     }
 
-    boolean solmark = solmarkedPlaceIds.contains(p.getId());
+    boolean isMarked = solmarkedPlaceIds.contains(p.getId());
 
     return MarkerResponse.builder()
         .id(p.getId())
         .latitude(p.getLatitude())
         .longitude(p.getLongitude())
         .category(category)
-        .solmark(solmark)
+        .isMarked(isMarked)
         .build();
   }
 
@@ -387,7 +387,7 @@ public class SolmapService {
         .map(
             p -> {
               // 각 장소 쏠마크 여부 판별
-              boolean solmark = solmarkedPlaceIds.contains(p.getId());
+              boolean isMarked = solmarkedPlaceIds.contains(p.getId());
 
               return RelatedSearchResponse.builder()
                   .id(p.getId())
@@ -401,7 +401,7 @@ public class SolmapService {
                               calculateDistance(
                                   userLat, userLng, p.getLatitude(), p.getLongitude())))
                   .category(getMainCategory(p))
-                  .solmark(solmark)
+                  .isMarked(isMarked)
                   .build();
             });
   }
@@ -476,14 +476,14 @@ public class SolmapService {
   }
 
   private MarkerResponse getMarkerResponse(Place p, Set<Long> solmarkedPlaceIds) {
-    boolean solmark = solmarkedPlaceIds.contains(p.getId());
+    boolean isMarked = solmarkedPlaceIds.contains(p.getId());
     // 응답 DTO 변환
     return MarkerResponse.builder()
         .id(p.getId())
         .latitude(p.getLatitude())
         .longitude(p.getLongitude())
         .category(getMainCategory(p))
-        .solmark(solmark)
+        .isMarked(isMarked)
         .build();
   }
 
