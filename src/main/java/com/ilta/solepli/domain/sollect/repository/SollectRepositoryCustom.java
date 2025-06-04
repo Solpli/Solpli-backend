@@ -13,7 +13,7 @@ public interface SollectRepositoryCustom {
   List<SollectSearchResponseContent> searchSollectByKeywordOrCategory(
       Long cursorId, int size, String parsedKeyword, String parsedCategory);
 
-  List<SolmarkSollectResponseContent> searchBySolmarkSollect(
+  List<SolmarkSollectResponseContent> searchSollectBySollectIdsAndCursor(
       Long cursorId, int size, List<Long> sollectIds);
 
   List<PopularSollectResponseContent> searchSollectBySollectIds(List<Long> sollectIds);

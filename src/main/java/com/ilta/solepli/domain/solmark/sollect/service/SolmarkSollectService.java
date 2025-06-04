@@ -47,7 +47,7 @@ public class SolmarkSollectService {
   public SolmarkSollectResponse getSolmarkSollects(User user, Long cursorId, int size) {
     List<Long> sollectIds = solmarkSollectRepository.findSollectIdsByUser(user);
     List<SolmarkSollectResponseContent> contents =
-        sollectRepositoryCustom.searchBySolmarkSollect(cursorId, size, sollectIds);
+        sollectRepositoryCustom.searchSollectBySollectIdsAndCursor(cursorId, size, sollectIds);
 
     boolean hasNext = contents.size() > size;
     if (hasNext) contents.remove(size);
@@ -68,7 +68,7 @@ public class SolmarkSollectService {
   public SolmarkSollectResponse getMySollects(User user, Long cursorId, int size) {
     List<Long> sollectIds = sollectRepository.findSollectIdsByUser(user);
     List<SolmarkSollectResponseContent> contents =
-        sollectRepositoryCustom.searchBySolmarkSollect(cursorId, size, sollectIds);
+        sollectRepositoryCustom.searchSollectBySollectIdsAndCursor(cursorId, size, sollectIds);
 
     boolean hasNext = contents.size() > size;
     if (hasNext) contents.remove(size);

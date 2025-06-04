@@ -94,7 +94,7 @@ public class SollectRepositoryImpl implements SollectRepositoryCustom {
   }
 
   @Override
-  public List<SolmarkSollectResponseContent> searchBySolmarkSollect(
+  public List<SolmarkSollectResponseContent> searchSollectBySollectIdsAndCursor(
       Long cursorId, int size, List<Long> sollectIds) {
     QSollectPlace firstPlace = new QSollectPlace("firstPlace");
     QPlace firstPlaceInfo = new QPlace("firstPlaceInfo");
