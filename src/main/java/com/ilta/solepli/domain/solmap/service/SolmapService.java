@@ -69,6 +69,7 @@ public class SolmapService {
   private static final int MAX_RELATED_SEARCH = 10;
   private static final int MAX_PLACE_THUMBNAIL_LIMIT = 5;
   private static final int INITIAL_REVIEW_LIMIT = 5;
+  private static final int NEARBY_RADIUS_KM_LIMIT = 2;
 
   @Transactional(readOnly = true)
   public List<MarkerResponse> getMarkersByViewport(
@@ -199,7 +200,7 @@ public class SolmapService {
     }
   }
 
-  @Transactional
+  @Transactional(readOnly = true)
   public PlaceSearchPreviewResponse getPlacesPreview(
       Double swLat,
       Double swLng,
@@ -216,65 +217,21 @@ public class SolmapService {
     validViewport(swLat, swLng, neLat, neLng);
     validCategory(category);
 
-    NumberExpression<Double> distance = distance(userLat, userLng);
-
     // 좌표에 속한 장소 조회
     List<Place> places =
-        jpaQueryFactory
-            .selectFrom(p)
-            .distinct()
-            .leftJoin(p.placeCategories, pc)
-            .leftJoin(pc.category, c)
-            .leftJoin(p.placeHours, ph)
-            .where(
-                viewPortIn(swLat, swLng, neLat, neLng),
-                categoryIn(category),
-                cursorAfter(cursorId, cursorDist, distance))
-            .orderBy(distance.asc(), p.id.asc())
-            .limit(limit + 1) // 커서 페이징을 위해 limit+1개 조회 (limit개 + nextCursor용 1개)
-            .fetch();
+        getPlacesByViewPort(
+            swLat, swLng, neLat, neLng, userLat, userLng, category, cursorId, cursorDist, limit);
 
     // 다음 페이지 커서 값 세팅 (limit+1번째 데이터가 존재할 경우에만)
-    Long nextCursor = null;
-    Double nextCursorDist = null;
-    if (places.size() > limit) {
-      nextCursor = places.get(limit - 1).getId();
-      Place place = places.get(limit - 1);
-      nextCursorDist =
-          getNextCursorDistance(userLat, userLng, place.getLatitude(), place.getLongitude());
-    }
+    CursorInfo next = setNextCursor(places, userLat, userLng, limit);
 
-    List<PlacePreviewDetail> placePreviewDetails =
-        places.stream()
-            .limit(limit) // limit개만 결과로 반환
-            .map(
-                p -> {
-                  List<String> topTagsForPlace =
-                      placeRepository.getTopTagsForPlace(p.getId(), TAG_LIMIT);
-                  List<String> reviewThumbnails =
-                      placeRepository.getReviewThumbnails(p.getId(), PREVIEW_THUMBNAIL_LIMIT);
-                  OpenStatus openStatus = getOpenStatus(p);
-                  Integer isSoloRecommendedPercent =
-                      placeRepository.getRecommendationPercent(p.getId());
-
-                  return PlacePreviewDetail.builder()
-                      .id(p.getId())
-                      .name(p.getName())
-                      .detailedCategory(p.getTypes())
-                      .tags(topTagsForPlace)
-                      .isSoloRecommended(isSoloRecommendedPercent)
-                      .rating(p.getRating())
-                      .isOpen(openStatus.isOpen())
-                      .closingTime(openStatus.closingTime())
-                      .thumbnailUrls(reviewThumbnails)
-                      .build();
-                })
-            .toList();
+    // PreviewDetail DTO 매핑
+    List<PlacePreviewDetail> placePreviewDetails = mapToPreviewDetails(places, limit);
 
     return PlaceSearchPreviewResponse.builder()
         .places(placePreviewDetails)
-        .nextCursor(nextCursor)
-        .nextCursorDist(nextCursorDist)
+        .nextCursor(next.id())
+        .nextCursorDist(next.distance())
         .build();
   }
 
@@ -303,6 +260,34 @@ public class SolmapService {
         p.longitude, // {2}
         userLng // {3}
         );
+  }
+
+  private List<Place> getPlacesByViewPort(
+      Double swLat,
+      Double swLng,
+      Double neLat,
+      Double neLng,
+      Double userLat,
+      Double userLng,
+      String category,
+      Long cursorId,
+      Double cursorDist,
+      int limit) {
+    NumberExpression<Double> distance = distance(userLat, userLng);
+
+    return jpaQueryFactory
+        .selectFrom(p)
+        .distinct()
+        .leftJoin(p.placeCategories, pc)
+        .leftJoin(pc.category, c)
+        .leftJoin(p.placeHours, ph)
+        .where(
+            viewPortIn(swLat, swLng, neLat, neLng),
+            categoryIn(category),
+            cursorAfter(cursorId, cursorDist, distance))
+        .orderBy(distance.asc(), p.id.asc())
+        .limit(limit + 1) // 커서 페이징을 위해 limit+1개 조회 (limit개 + nextCursor용 1개)
+        .fetch();
   }
 
   // 커서(다음 페이지)용 거리 계산
@@ -581,7 +566,7 @@ public class SolmapService {
                   .detailedCategory(p.getTypes())
                   .tags(topTagsForPlace)
                   .isSoloRecommended(isSoloRecommendedPercent)
-                  .rating(p.getRating())
+                  .rating(truncateTo2Decimals(p.getRating()))
                   .isOpen(openStatus.isOpen())
                   .closingTime(openStatus.closingTime())
                   .thumbnailUrls(reviewThumbnails)
@@ -755,5 +740,39 @@ public class SolmapService {
         .places(placePreviewDetails)
         .nextCursor(nextCursor)
         .build();
+  }
+
+  @Transactional(readOnly = true)
+  public PlaceSearchPreviewResponse getPlacesPreviewNearby(
+      Double userLat, Double userLng, Long cursorId, Double cursorDist, int limit) {
+    // 반경 km 이내의 장소 조회
+    List<Place> places = getPlacesNearby(userLat, userLng, cursorId, cursorDist, limit);
+    // 커서 정보 세팅
+    CursorInfo next = setNextCursor(places, userLat, userLng, limit);
+    // PlacePreviewDetail DTO 매핑
+    List<PlacePreviewDetail> placePreviewDetails = mapToPreviewDetails(places, limit);
+
+    return PlaceSearchPreviewResponse.builder()
+        .places(placePreviewDetails)
+        .nextCursor(next.id())
+        .nextCursorDist(next.distance())
+        .build();
+  }
+
+  private List<Place> getPlacesNearby(
+      Double userLat, Double userLng, Long cursorId, Double cursorDist, int limit) {
+
+    NumberExpression<Double> distance = distance(userLat, userLng);
+
+    return jpaQueryFactory
+        .selectFrom(p)
+        .where(nearby(distance), cursorAfter(cursorId, cursorDist, distance))
+        .orderBy(distance.asc(), p.id.asc())
+        .limit(limit + 1)
+        .fetch();
+  }
+
+  private BooleanExpression nearby(NumberExpression<Double> distance) {
+    return distance.loe(NEARBY_RADIUS_KM_LIMIT);
   }
 }

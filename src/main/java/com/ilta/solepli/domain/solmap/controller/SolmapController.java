@@ -173,4 +173,19 @@ public class SolmapController {
 
     return ResponseEntity.ok().body(SuccessResponse.successWithData(response));
   }
+
+  @Operation(summary = "검색결과 없을시 주변 장소 조회 API", description = "검색결과 없을시 주변 장소 조회 API 입니다.")
+  @GetMapping("/places/nearby")
+  public ResponseEntity<SuccessResponse<PlaceSearchPreviewResponse>> getPlacesPreviewNearby(
+      @RequestParam Double userLat,
+      @RequestParam Double userLng,
+      @RequestParam(required = false) Long cursorId,
+      @RequestParam(required = false) Double cursorDist,
+      @RequestParam(required = false, defaultValue = "5") int limit) {
+
+    PlaceSearchPreviewResponse response =
+        solmapService.getPlacesPreviewNearby(userLat, userLng, cursorId, cursorDist, limit);
+
+    return ResponseEntity.ok().body(SuccessResponse.successWithData(response));
+  }
 }
