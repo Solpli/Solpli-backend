@@ -69,6 +69,7 @@ public class SolmapService {
   private static final int MAX_RELATED_SEARCH = 10;
   private static final int MAX_PLACE_THUMBNAIL_LIMIT = 5;
   private static final int INITIAL_REVIEW_LIMIT = 5;
+  private static final int NEARBY_RADIUS_KM_LIMIT = 2;
 
   @Transactional(readOnly = true)
   public List<MarkerResponse> getMarkersByViewport(
@@ -755,5 +756,39 @@ public class SolmapService {
         .places(placePreviewDetails)
         .nextCursor(nextCursor)
         .build();
+  }
+
+  @Transactional(readOnly = true)
+  public PlaceSearchPreviewResponse getPlacesPreviewNearby(
+      Double userLat, Double userLng, Long cursorId, Double cursorDist, int limit) {
+    // 반경 km 이내의 장소 조회
+    List<Place> places = getPlacesNearby(userLat, userLng, cursorId, cursorDist, limit);
+    // 커서 정보 세팅
+    CursorInfo next = setNextCursor(places, userLat, userLng, limit);
+    // PlacePreviewDetail DTO 매핑
+    List<PlacePreviewDetail> placePreviewDetails = mapToPreviewDetails(places, limit);
+
+    return PlaceSearchPreviewResponse.builder()
+        .places(placePreviewDetails)
+        .nextCursor(next.id())
+        .nextCursorDist(next.distance())
+        .build();
+  }
+
+  private List<Place> getPlacesNearby(
+      Double userLat, Double userLng, Long cursorId, Double cursorDist, int limit) {
+
+    NumberExpression<Double> distance = distance(userLat, userLng);
+
+    return jpaQueryFactory
+        .selectFrom(p)
+        .where(nearby(distance), cursorAfter(cursorId, cursorDist, distance))
+        .orderBy(distance.asc(), p.id.asc())
+        .limit(limit + 1)
+        .fetch();
+  }
+
+  private BooleanExpression nearby(NumberExpression<Double> distance) {
+    return distance.loe(NEARBY_RADIUS_KM_LIMIT);
   }
 }
