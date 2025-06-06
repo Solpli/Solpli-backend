@@ -21,7 +21,7 @@ public record SollectDetailResponse(
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         LocalDateTime createdAt,
     List<SollectContent> contents,
-    Long savedCount,
+    Long markedCount,
     List<PlaceSummary> placeSummaries) {
   @Builder
   public record SollectContent(ContentType type, String imageUrl, String text) {}
@@ -32,6 +32,6 @@ public record SollectDetailResponse(
       String category,
       Integer recommendationPercent,
       List<String> tags,
-      Boolean isSaved,
+      Boolean isMarked,
       Double rating) {}
 }
