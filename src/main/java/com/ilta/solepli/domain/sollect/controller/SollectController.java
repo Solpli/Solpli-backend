@@ -81,12 +81,9 @@ public class SollectController {
   @Operation(summary = "쏠렉트 상세 조회 API", description = "쏠렉트를 상세 조회하는 API입니다.")
   @GetMapping("/{id}")
   public ResponseEntity<SuccessResponse<SollectDetailResponse>> getSollectDetail(
-      @PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
+      @PathVariable Long id, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
-    User user = null;
-    if (userDetails != null) {
-      user = userDetails.user();
-    }
+    User user = SecurityUtil.getUser(customUserDetails);
 
     SollectDetailResponse sollectDetail = sollectService.getSollectDetail(id, user);
 
