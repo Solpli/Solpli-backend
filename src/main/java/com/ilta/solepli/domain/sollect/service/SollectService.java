@@ -481,6 +481,7 @@ public class SollectService {
   private SollectContent findImage(List<SollectContent> sollectContents, String filename) {
     for (SollectContent sollectContent : sollectContents) {
       if (sollectContent.getType().equals(ContentType.IMAGE)
+          && sollectContent.getImageUrl() == null
           && sollectContent.getFilename().equals(filename)) {
         return sollectContent;
       }
