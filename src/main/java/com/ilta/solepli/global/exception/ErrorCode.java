@@ -75,7 +75,10 @@ public enum ErrorCode {
   CONTENT_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 콘텐츠 이미지를 찾을 수 없습니다."),
 
   // 최근 검색어 관련 에러
-  RECENT_SEARCH_NOT_FOUND(HttpStatus.NOT_FOUND, "삭제하려는 최근 검색어가 존재하지 않습니다.");
+  RECENT_SEARCH_NOT_FOUND(HttpStatus.NOT_FOUND, "삭제하려는 최근 검색어가 존재하지 않습니다."),
+
+  // 리뷰 관련 에러
+  REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 리뷰 입니다.");
 
   private final HttpStatus httpStatus;
   private final String message;
