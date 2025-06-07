@@ -54,7 +54,7 @@ public class AuthService {
                 .build());
 
     SolmarkPlaceCollection solmarkPlaceCollection =
-        SolmarkPlaceCollection.builder().name("장소 리스트").iconId(1).user(savedUser).build();
+        SolmarkPlaceCollection.builder().name("저장 리스트").iconId(1).user(savedUser).build();
 
     solmarkPlaceCollectionRepository.save(solmarkPlaceCollection);
   }
