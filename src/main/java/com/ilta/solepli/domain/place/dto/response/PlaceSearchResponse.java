@@ -1,4 +1,4 @@
-package com.ilta.solepli.domain.sollect.dto.response;
+package com.ilta.solepli.domain.place.dto.response;
 
 import lombok.Builder;
 
