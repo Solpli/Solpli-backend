@@ -1,4 +1,4 @@
-package com.ilta.solepli.domain.place.repository;
+package com.ilta.solepli.domain.solmark.place.repository;
 
 import java.util.List;
 
