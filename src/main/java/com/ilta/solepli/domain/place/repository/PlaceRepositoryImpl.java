@@ -7,6 +7,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
 import com.ilta.solepli.domain.category.entity.QCategory;
+import com.ilta.solepli.domain.place.dto.response.PlaceSearchResponse;
 import com.ilta.solepli.domain.place.entity.Place;
 import com.ilta.solepli.domain.place.entity.QPlace;
 import com.ilta.solepli.domain.place.entity.mapping.QPlaceCategory;
@@ -15,7 +16,6 @@ import com.ilta.solepli.domain.review.entity.Review;
 import com.ilta.solepli.domain.review.entity.mapping.QReviewImage;
 import com.ilta.solepli.domain.review.entity.mapping.QReviewTag;
 import com.ilta.solepli.domain.review.entity.mapping.ReviewImage;
-import com.ilta.solepli.domain.sollect.dto.response.PlaceSearchResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectPlaceAddPreviewResponse;
 
 @RequiredArgsConstructor

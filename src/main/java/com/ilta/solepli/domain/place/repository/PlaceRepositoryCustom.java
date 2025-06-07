@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
-import com.ilta.solepli.domain.sollect.dto.response.PlaceSearchResponse;
+import com.ilta.solepli.domain.place.dto.response.PlaceSearchResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectPlaceAddPreviewResponse;
 
 @Repository
