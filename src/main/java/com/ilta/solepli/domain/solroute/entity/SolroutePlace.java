@@ -31,6 +31,9 @@ public class SolroutePlace {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  @Column(nullable = false)
+  private Integer seq;
+
   @Column(length = 100)
   private String memo;
 
