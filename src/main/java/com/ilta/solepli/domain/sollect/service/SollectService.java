@@ -19,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 
 import com.ilta.solepli.domain.place.entity.Place;
 import com.ilta.solepli.domain.place.repository.PlaceRepository;
-import com.ilta.solepli.domain.place.repository.SolmarkPlaceRepository;
 import com.ilta.solepli.domain.sollect.dto.PopularSollectResponseContent;
 import com.ilta.solepli.domain.sollect.dto.SollectSearchResponseContent;
 import com.ilta.solepli.domain.sollect.dto.request.SollectCreateRequest;
@@ -39,6 +38,7 @@ import com.ilta.solepli.domain.sollect.repository.SollectPlaceRepository;
 import com.ilta.solepli.domain.sollect.repository.SollectRepository;
 import com.ilta.solepli.domain.sollect.repository.SollectRepositoryCustom;
 import com.ilta.solepli.domain.solmark.place.entity.SolmarkPlace;
+import com.ilta.solepli.domain.solmark.place.repository.SolmarkPlaceRepository;
 import com.ilta.solepli.domain.solmark.sollect.repository.SolmarkSollectRepository;
 import com.ilta.solepli.domain.solmark.sollect.service.SolmarkSollectService;
 import com.ilta.solepli.domain.user.entity.User;
@@ -557,7 +557,7 @@ public class SollectService {
 
     // 쏠마크 장소 조회
     List<SolmarkPlace> solmarkPlaces =
-        solmarkPlaceRepository.findAllByUserAndPlace_IdIn(user, placeIds);
+        solmarkPlaceRepository.findBySolmarkPlaceCollection_UserAndPlace_idIn(user, placeIds);
 
     // 쏠마크 장소 ID Set 반환
     return solmarkPlaces.stream().map(sp -> sp.getPlace().getId()).collect(Collectors.toSet());
