@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
+import com.ilta.solepli.domain.solmark.place.entity.SolmarkPlaceCollection;
+import com.ilta.solepli.domain.solmark.place.repository.SolmarkPlaceCollectionRepository;
 import com.ilta.solepli.domain.user.entity.Role;
 import com.ilta.solepli.domain.user.entity.User;
 import com.ilta.solepli.domain.user.repository.UserRepository;
@@ -18,6 +20,7 @@ import com.ilta.solepli.domain.user.repository.UserRepository;
 public class UserService {
 
   private final UserRepository userRepository;
+  private final SolmarkPlaceCollectionRepository solmarkPlaceCollectionRepository;
 
   private final String[] ADJECTIVES = {
     "귀여운", "용감한", "날쌘", "온순한", "영리한", "수줍은", "호기심많은", "느긋한", "활발한", "우아한", "엉뚱한", "애교많은", "부지런한"
@@ -72,14 +75,23 @@ public class UserService {
     return userRepository
         .findByLoginId(loginId)
         .orElseGet(
-            () ->
-                userRepository.save(
-                    User.builder()
-                        .role(Role.USER)
-                        .loginId(loginId)
-                        .profileImageUrl(defaultImageUrl)
-                        .nickname(checkedNickname)
-                        .build()));
+            () -> {
+              User savedUser =
+                  userRepository.save(
+                      User.builder()
+                          .role(Role.USER)
+                          .loginId(loginId)
+                          .profileImageUrl(defaultImageUrl)
+                          .nickname(checkedNickname)
+                          .build());
+
+              SolmarkPlaceCollection solmarkPlaceCollection =
+                  SolmarkPlaceCollection.builder().name("저장 리스트").iconId(1).user(savedUser).build();
+
+              solmarkPlaceCollectionRepository.save(solmarkPlaceCollection);
+
+              return savedUser;
+            });
   }
 
   @Transactional(readOnly = true)
