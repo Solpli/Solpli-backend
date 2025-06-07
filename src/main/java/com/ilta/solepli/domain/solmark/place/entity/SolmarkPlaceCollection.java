@@ -12,8 +12,8 @@ import com.ilta.solepli.domain.user.entity.User;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Table(name = "solmark_place_list")
-public class SolmarkPlaceList {
+@Table(name = "solmark_place_collections")
+public class SolmarkPlaceCollection {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

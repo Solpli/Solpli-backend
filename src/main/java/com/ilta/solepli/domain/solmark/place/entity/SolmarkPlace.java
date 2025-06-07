@@ -20,9 +20,9 @@ public class SolmarkPlace {
   private Long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "solmark_place_list_id")
+  @JoinColumn(name = "solmark_place_collection_id")
   @OnDelete(action = OnDeleteAction.CASCADE)
-  private SolmarkPlaceList solmarkPlaceList;
+  private SolmarkPlaceCollection solmarkPlaceCollection;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "place_id")

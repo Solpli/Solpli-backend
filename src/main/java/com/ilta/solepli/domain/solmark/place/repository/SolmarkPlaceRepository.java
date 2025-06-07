@@ -9,6 +9,6 @@ import com.ilta.solepli.domain.user.entity.User;
 
 public interface SolmarkPlaceRepository extends JpaRepository<SolmarkPlace, Long> {
 
-  List<SolmarkPlace> findBySolmarkPlaceList_UserAndPlace_idIn(
+  List<SolmarkPlace> findBySolmarkPlaceCollection_UserAndPlace_idIn(
       User solmarkPlaceListUser, List<Long> placeIds);
 }
