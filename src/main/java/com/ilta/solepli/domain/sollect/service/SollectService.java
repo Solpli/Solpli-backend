@@ -37,6 +37,8 @@ import com.ilta.solepli.domain.sollect.repository.SollectContentRepository;
 import com.ilta.solepli.domain.sollect.repository.SollectPlaceRepository;
 import com.ilta.solepli.domain.sollect.repository.SollectRepository;
 import com.ilta.solepli.domain.sollect.repository.SollectRepositoryCustom;
+import com.ilta.solepli.domain.solmark.place.entity.SolmarkPlace;
+import com.ilta.solepli.domain.solmark.place.repository.SolmarkPlaceRepository;
 import com.ilta.solepli.domain.solmark.sollect.repository.SolmarkSollectRepository;
 import com.ilta.solepli.domain.solmark.sollect.service.SolmarkSollectService;
 import com.ilta.solepli.domain.user.entity.User;
@@ -61,6 +63,7 @@ public class SollectService {
   private static final String RECENT_SEARCH_PREFIX = "sollect_recent_search:";
   private static final int MAX_RECENT_SEARCH = 10;
   private static final int POPULAR_SEARCH_LIMIT = 4;
+  private final SolmarkPlaceRepository solmarkPlaceRepository;
 
   @Transactional
   public SollectCreateResponse createSollect(SollectCreateRequest request, User user) {
@@ -262,7 +265,10 @@ public class SollectService {
     }
 
     // 쏠렉트 저장 수
-    Long savedCount = solmarkSollectRepository.countSolmarkSollectsBySollect(sollect);
+    Long markedCount = solmarkSollectRepository.countSolmarkSollectsBySollect(sollect);
+
+    // 해당 유저의 장소 쏠마크 여부
+    Set<Long> makredSet = getSolmarkedPlaceIds(user, sollectPlaces);
 
     // 장소 요약 정보
     List<SollectDetailResponse.PlaceSummary> placeSummaries = new ArrayList<>();
@@ -270,6 +276,7 @@ public class SollectService {
       Place place = sollectPlace.getPlace();
       List<String> tags = placeRepository.getTopTagsForPlace(place.getId(), 3);
       Integer recommendationPercent = placeRepository.getRecommendationPercent(place.getId());
+      boolean isMarked = makredSet.contains(place.getId());
 
       SollectDetailResponse.PlaceSummary placeSummary =
           SollectDetailResponse.PlaceSummary.builder()
@@ -278,8 +285,8 @@ public class SollectService {
               .recommendationPercent(recommendationPercent)
               .tags(tags)
               .rating(place.getRating())
+              .isMarked(isMarked)
               .build();
-      // isSaved는 추후에 쏠마크 - 쏠맵 기능 구현되면 추가 예정
 
       placeSummaries.add(placeSummary);
     }
@@ -296,7 +303,7 @@ public class SollectService {
             .nickname(writer.getNickname())
             .createdAt(sollect.getCreatedAt())
             .contents(contents)
-            .savedCount(savedCount)
+            .markedCount(markedCount)
             .placeSummaries(placeSummaries)
             .build();
 
@@ -538,5 +545,21 @@ public class SollectService {
                     .isMarked(markedSollectIds.contains(content.sollectId()))
                     .build())
         .toList();
+  }
+
+  private Set<Long> getSolmarkedPlaceIds(User user, List<SollectPlace> sollectPlaces) {
+    // 비로그인이거나 조회된 장소가 없으면 빈 Set 반환
+    if (user == null & sollectPlaces.isEmpty()) {
+      return Collections.emptySet();
+    }
+
+    List<Long> placeIds = sollectPlaces.stream().map(sp -> sp.getPlace().getId()).toList();
+
+    // 쏠마크 장소 조회
+    List<SolmarkPlace> solmarkPlaces =
+        solmarkPlaceRepository.findBySolmarkPlaceCollection_UserAndPlace_idIn(user, placeIds);
+
+    // 쏠마크 장소 ID Set 반환
+    return solmarkPlaces.stream().map(sp -> sp.getPlace().getId()).collect(Collectors.toSet());
   }
 }
