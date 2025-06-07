@@ -12,6 +12,8 @@ import com.ilta.solepli.domain.auth.dto.response.LoginResponse;
 import com.ilta.solepli.domain.auth.entity.LoginType;
 import com.ilta.solepli.domain.auth.service.oauth.OAuthService;
 import com.ilta.solepli.domain.auth.service.oauth.OAuthServiceFactory;
+import com.ilta.solepli.domain.solmark.place.entity.SolmarkPlaceCollection;
+import com.ilta.solepli.domain.solmark.place.repository.SolmarkPlaceCollectionRepository;
 import com.ilta.solepli.domain.user.entity.Role;
 import com.ilta.solepli.domain.user.entity.User;
 import com.ilta.solepli.domain.user.repository.UserRepository;
@@ -28,6 +30,7 @@ public class AuthService {
   private final OAuthServiceFactory oauthServiceFactory;
   private final PasswordEncoder passwordEncoder;
   private final JwtTokenProvider jwtTokenProvider;
+  private final SolmarkPlaceCollectionRepository solmarkPlaceCollectionRepository;
 
   @Value("${DEFAULT_PROFILE_URL}")
   private String defaultImageUrl;
@@ -40,14 +43,20 @@ public class AuthService {
       throw new CustomException(ErrorCode.USER_EXISTS);
     }
 
-    userRepository.save(
-        User.builder()
-            .role(Role.ADMIN)
-            .loginId(loginId)
-            .password(passwordEncoder.encode(request.password()))
-            .profileImageUrl(defaultImageUrl)
-            .nickname(userService.generateAdminNickname())
-            .build());
+    User savedUser =
+        userRepository.save(
+            User.builder()
+                .role(Role.ADMIN)
+                .loginId(loginId)
+                .password(passwordEncoder.encode(request.password()))
+                .profileImageUrl(defaultImageUrl)
+                .nickname(userService.generateAdminNickname())
+                .build());
+
+    SolmarkPlaceCollection solmarkPlaceCollection =
+        SolmarkPlaceCollection.builder().name("장소 리스트").iconId(1).user(savedUser).build();
+
+    solmarkPlaceCollectionRepository.save(solmarkPlaceCollection);
   }
 
   @Transactional(readOnly = true)
