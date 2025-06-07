@@ -5,27 +5,28 @@ import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import com.ilta.solepli.domain.place.entity.Place;
+import com.ilta.solepli.domain.user.entity.User;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Table(name = "solmark_places")
-public class SolmarkPlace {
+@Table(name = "solmark_place_list")
+public class SolmarkPlaceList {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "solmark_place_list_id")
+  @JoinColumn(name = "user_id")
   @OnDelete(action = OnDeleteAction.CASCADE)
-  private SolmarkPlaceList solmarkPlaceList;
+  private User user;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "place_id")
-  @OnDelete(action = OnDeleteAction.CASCADE)
-  private Place place;
+  @Column(nullable = false)
+  private String name;
+
+  @Column(nullable = false)
+  private int iconId;
 }
