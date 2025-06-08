@@ -85,6 +85,7 @@ public class SolrouteService {
     // 정확히 1KM 내에 있는 장소만 추출
     List<Place> result =
         candidates.stream()
+            .filter(dto -> !dto.place().getId().equals(placeId))
             .filter(
                 dto ->
                     PlaceUtil.calculateDistance(
