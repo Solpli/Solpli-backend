@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import com.ilta.solepli.domain.solroute.dto.request.SolrouteCreateRequest;
+import com.ilta.solepli.domain.solroute.dto.response.PlacePreviewResponse;
 import com.ilta.solepli.domain.solroute.dto.response.PlaceSummaryResponse;
 import com.ilta.solepli.domain.solroute.service.SolrouteService;
 import com.ilta.solepli.domain.user.util.CustomUserDetails;
@@ -41,7 +42,7 @@ public class SolrouteController {
     return ResponseEntity.status(200).body(SuccessResponse.successWithNoData("쏠루트 생성 완료."));
   }
 
-  @Operation(summary = "추가한 장소 근처 인기 장소 조회 API", description = "추가한 장소 근처 인기 장소 조회 API")
+  @Operation(summary = "추가한 장소 근처 인기 장소 조회 API", description = "추가한 장소 근처 인기 장소 조회 API입니다.")
   @GetMapping("/place/nearby/{placeId}")
   public ResponseEntity<SuccessResponse<List<PlaceSummaryResponse>>> findNearbyPopularPlace(
       @AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable Long placeId) {
@@ -50,5 +51,17 @@ public class SolrouteController {
         solrouteService.findNearbyPopularPlace(customUserDetails.user(), placeId);
 
     return ResponseEntity.ok(SuccessResponse.successWithData(nearbyPopularPlace));
+  }
+
+  @Operation(
+      summary = "쏠루트 코스 생성 - 장소 프리뷰 조회 API",
+      description = "쏠루트 코스 생성시 사용하는 장소 프리뷰 조회 API입니다.")
+  @GetMapping("/place/{placeId}")
+  public ResponseEntity<SuccessResponse<PlacePreviewResponse>> getPlacePreview(
+      @PathVariable Long placeId) {
+
+    PlacePreviewResponse placePreview = solrouteService.getPlacePreview(placeId);
+
+    return ResponseEntity.ok(SuccessResponse.successWithData(placePreview));
   }
 }
