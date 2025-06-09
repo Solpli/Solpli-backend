@@ -24,7 +24,7 @@ public class SolmarkPlaceCollection {
   @OnDelete(action = OnDeleteAction.CASCADE)
   private User user;
 
-  @Column(nullable = false)
+  @Column(nullable = false, length = 15)
   private String name;
 
   @Column(nullable = false)
