@@ -29,7 +29,7 @@ public record SollectDetailResponse(
   @Builder
   public record PlaceSummary(
       String name,
-      String category,
+      String detailedCategory,
       Integer recommendationPercent,
       List<String> tags,
       Boolean isMarked,

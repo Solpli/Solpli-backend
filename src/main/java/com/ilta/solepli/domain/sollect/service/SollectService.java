@@ -281,7 +281,7 @@ public class SollectService {
       SollectDetailResponse.PlaceSummary placeSummary =
           SollectDetailResponse.PlaceSummary.builder()
               .name(place.getName())
-              .category(place.getTypes())
+              .detailedCategory(place.getTypes())
               .recommendationPercent(recommendationPercent)
               .tags(tags)
               .rating(PlaceUtil.truncateTo2Decimals(place.getRating()))

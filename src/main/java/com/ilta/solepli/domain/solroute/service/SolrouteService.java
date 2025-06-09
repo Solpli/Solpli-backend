@@ -107,7 +107,7 @@ public class SolrouteService {
       PlaceSummaryResponse placeSummaryResponse =
           PlaceSummaryResponse.builder()
               .name(p.getName())
-              .category(p.getTypes())
+              .detailedCategory(p.getTypes())
               .recommendationPercent(recommendationPercent)
               .tags(tags)
               .isMarked(isMarked)
