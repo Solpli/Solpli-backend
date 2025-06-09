@@ -19,6 +19,7 @@ import com.ilta.solepli.domain.solmark.place.repository.SolmarkPlaceRepository;
 import com.ilta.solepli.domain.solroute.dto.PlaceWithReviewCountDto;
 import com.ilta.solepli.domain.solroute.dto.request.SolrouteCreateRequest;
 import com.ilta.solepli.domain.solroute.dto.request.SolrouteCreateRequest.PlaceInfo;
+import com.ilta.solepli.domain.solroute.dto.response.PlacePreviewResponse;
 import com.ilta.solepli.domain.solroute.dto.response.PlaceSummaryResponse;
 import com.ilta.solepli.domain.solroute.entity.Solroute;
 import com.ilta.solepli.domain.solroute.entity.SolroutePlace;
@@ -118,6 +119,22 @@ public class SolrouteService {
     }
 
     return response;
+  }
+
+  @Transactional(readOnly = true)
+  public PlacePreviewResponse getPlacePreview(Long placeId) {
+    Place place =
+        placeRepository
+            .findById(placeId)
+            .orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_EXISTS));
+
+    return PlacePreviewResponse.builder()
+        .name(place.getName())
+        .detailedCategory(place.getTypes())
+        .address(place.getAddress())
+        .latitude(place.getLatitude())
+        .longitude(place.getLongitude())
+        .build();
   }
 
   private Set<Long> getSolmarkedPlaceIds(User user, List<Place> places) {
