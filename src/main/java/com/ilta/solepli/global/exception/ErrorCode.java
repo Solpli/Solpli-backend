@@ -78,7 +78,10 @@ public enum ErrorCode {
   RECENT_SEARCH_NOT_FOUND(HttpStatus.NOT_FOUND, "삭제하려는 최근 검색어가 존재하지 않습니다."),
 
   // 리뷰 관련 에러
-  REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 리뷰 입니다.");
+  REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 리뷰 입니다."),
+
+  // 쏠마크 - 장소 관련 에러
+  COLLECTION_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "저장 리스트는 최대 50개까지만 생성할 수 있습니다.");
 
   private final HttpStatus httpStatus;
   private final String message;
