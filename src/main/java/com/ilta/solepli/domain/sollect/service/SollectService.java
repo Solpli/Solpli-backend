@@ -44,6 +44,7 @@ import com.ilta.solepli.domain.user.entity.User;
 import com.ilta.solepli.global.exception.CustomException;
 import com.ilta.solepli.global.exception.ErrorCode;
 import com.ilta.solepli.global.service.S3Service;
+import com.ilta.solepli.global.util.PlaceUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -280,10 +281,10 @@ public class SollectService {
       SollectDetailResponse.PlaceSummary placeSummary =
           SollectDetailResponse.PlaceSummary.builder()
               .name(place.getName())
-              .category(place.getTypes())
+              .detailedCategory(place.getTypes())
               .recommendationPercent(recommendationPercent)
               .tags(tags)
-              .rating(place.getRating())
+              .rating(PlaceUtil.truncateTo2Decimals(place.getRating()))
               .isMarked(isMarked)
               .build();
 

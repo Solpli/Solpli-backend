@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.ilta.solepli.domain.place.entity.Place;
+import com.ilta.solepli.domain.solroute.dto.PlaceWithReviewCountDto;
 
 public interface PlaceRepository extends JpaRepository<Place, Long>, PlaceRepositoryCustom {
 
@@ -53,4 +54,19 @@ public interface PlaceRepository extends JpaRepository<Place, Long>, PlaceReposi
     WHERE p.id IN :ids
 """)
   List<Place> findByPlace_IdIn(List<Long> ids);
+
+  @Query(
+      """
+  SELECT new com.ilta.solepli.domain.solroute.dto.PlaceWithReviewCountDto(p, COUNT(r))
+  FROM Place p
+  LEFT JOIN p.reviews r
+  WHERE p.latitude BETWEEN :minLat AND :maxLat
+    AND p.longitude BETWEEN :minLng AND :maxLng
+  GROUP BY p
+""")
+  List<PlaceWithReviewCountDto> findPlacesWithReviewCountInArea(
+      @Param("minLat") double minLat,
+      @Param("maxLat") double maxLat,
+      @Param("minLng") double minLng,
+      @Param("maxLng") double maxLng);
 }
