@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import com.ilta.solepli.domain.solmark.place.dto.reqeust.AddSolmarkPlaceRequest;
 import com.ilta.solepli.domain.solmark.place.dto.reqeust.CreateCollectionRequest;
 import com.ilta.solepli.domain.solmark.place.service.SolmarkPlaceService;
 import com.ilta.solepli.domain.user.util.CustomUserDetails;
@@ -33,5 +34,17 @@ public class SolmarkPlaceController {
 
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(SuccessResponse.successWithNoData("쏠마크 저장 리스트 추가 성공"));
+  }
+
+  @Operation(summary = "쏠마크 장소 추가 API", description = "쏠마크 장소 저장 리스트 추가 API 입니다.")
+  @PostMapping("")
+  public ResponseEntity<SuccessResponse<Void>> addSolmarkPlace(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails,
+      @RequestBody AddSolmarkPlaceRequest addSolmarkPlaceRequest) {
+
+    solmarkPlaceService.addSolmarkPlace(customUserDetails, addSolmarkPlaceRequest);
+
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(SuccessResponse.successWithNoData("쏠마크 장소 추가 성공"));
   }
 }
