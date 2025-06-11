@@ -68,6 +68,11 @@ public class SolmarkPlaceService {
     List<SolmarkPlaceCollection> collections =
         solmarkPlaceCollectionRepository.findByUserAndId_In(user, collectionIds);
 
+    // 추가할 저장 리스트에 이미 저장된 장소인지 검증
+    if (solmarkPlaceRepository.existsBySolmarkPlaceCollectionInAndPlace(collections, place)) {
+      throw new CustomException(ErrorCode.DUPLICATED_MARK_PLACE);
+    }
+
     // 조회한 쏠마크 저장 리스트에 추가할 SolmarkPlace 객체 리스트
     List<SolmarkPlace> solmarkPlaces =
         collections.stream()

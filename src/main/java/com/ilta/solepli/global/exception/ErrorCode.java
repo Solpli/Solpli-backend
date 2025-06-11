@@ -36,6 +36,7 @@ public enum ErrorCode {
 
   // 장소 관련 에러
   PLACE_NOT_EXISTS(HttpStatus.NOT_FOUND, "존재하지 않는 장소입니다."),
+  DUPLICATED_MARK_PLACE(HttpStatus.CONFLICT, "이미 저장된 장소입니다"),
 
   // S3 관련 에러
   EMPTY_IMAGE(HttpStatus.BAD_REQUEST, "이미지 파일이 비어있습니다."),
