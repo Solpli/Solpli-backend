@@ -93,6 +93,7 @@ public class SolmarkPlaceService {
   private List<SolmarkPlaceCollection> validateAndGetCollections(User user, List<Long> ids) {
     List<SolmarkPlaceCollection> cols =
         solmarkPlaceCollectionRepository.findByUserAndId_In(user, ids);
+    // 저장 리스트 ID 검증
     if (cols.size() != ids.size()) {
       throw new CustomException(ErrorCode.COLLECTION_NOT_FOUND);
     }
