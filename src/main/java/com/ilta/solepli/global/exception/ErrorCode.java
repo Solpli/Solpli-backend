@@ -37,6 +37,7 @@ public enum ErrorCode {
   // 장소 관련 에러
   PLACE_NOT_EXISTS(HttpStatus.NOT_FOUND, "존재하지 않는 장소입니다."),
   DUPLICATED_MARK_PLACE(HttpStatus.CONFLICT, "쏠마크 저장 리스트에 추가되어있는 장소입니다"),
+  EXCEEDED_MARK_PLACE_LIMIT(HttpStatus.BAD_REQUEST, "저장 리스트에 추가할 수 있는 장소 수가 최대 100개를 초과했습니다."),
 
   // S3 관련 에러
   EMPTY_IMAGE(HttpStatus.BAD_REQUEST, "이미지 파일이 비어있습니다."),
@@ -82,7 +83,8 @@ public enum ErrorCode {
   REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 리뷰 입니다."),
 
   // 쏠마크 - 장소 관련 에러
-  COLLECTION_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "저장 리스트는 최대 50개까지만 생성할 수 있습니다.");
+  COLLECTION_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "저장 리스트는 최대 50개까지만 생성할 수 있습니다."),
+  COLLECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 저장 리스트 입니다.");
 
   private final HttpStatus httpStatus;
   private final String message;

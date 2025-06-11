@@ -1,5 +1,8 @@
 package com.ilta.solepli.domain.solmark.place.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
@@ -29,4 +32,7 @@ public class SolmarkPlaceCollection {
 
   @Column(nullable = false)
   private int iconId;
+
+  @OneToMany(mappedBy = "solmarkPlaceCollection", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<SolmarkPlace> solmarkPlaces = new ArrayList<>();
 }

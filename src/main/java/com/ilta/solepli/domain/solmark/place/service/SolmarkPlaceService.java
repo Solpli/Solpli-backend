@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import com.ilta.solepli.domain.place.entity.Place;
 import com.ilta.solepli.domain.place.repository.PlaceRepository;
@@ -20,6 +21,7 @@ import com.ilta.solepli.domain.user.util.CustomUserDetails;
 import com.ilta.solepli.global.exception.CustomException;
 import com.ilta.solepli.global.exception.ErrorCode;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SolmarkPlaceService {
@@ -27,6 +29,9 @@ public class SolmarkPlaceService {
   private final SolmarkPlaceCollectionRepository solmarkPlaceCollectionRepository;
   private final PlaceRepository placeRepository;
   private final SolmarkPlaceRepository solmarkPlaceRepository;
+
+  private static final int MAX_PLACES_PER_COLLECTION = 100;
+  private static final int MAX_COLLECTIONS_PER_USER = 50;
 
   @Transactional
   public void createCollection(
@@ -38,7 +43,7 @@ public class SolmarkPlaceService {
     Integer count = solmarkPlaceCollectionRepository.countByUser(user);
 
     // 최대 개수(50) 검증
-    if (count >= 50) {
+    if (count >= MAX_COLLECTIONS_PER_USER) {
       throw new CustomException(ErrorCode.COLLECTION_LIMIT_EXCEEDED);
     }
 
@@ -65,20 +70,45 @@ public class SolmarkPlaceService {
             .orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_EXISTS));
 
     // 요청 데이터 collectionIds를 기반으로 사용자 쏠마크 저장 리스트 조회
-    List<SolmarkPlaceCollection> collections =
-        solmarkPlaceCollectionRepository.findByUserAndId_In(user, collectionIds);
+    List<SolmarkPlaceCollection> collections = validateAndGetCollections(user, collectionIds);
 
     // 추가할 저장 리스트에 이미 저장된 장소인지 검증
-    if (solmarkPlaceRepository.existsBySolmarkPlaceCollectionInAndPlace(collections, place)) {
-      throw new CustomException(ErrorCode.DUPLICATED_MARK_PLACE);
-    }
+    validateCollectionPlaceDuplicate(collections, place);
 
     // 조회한 쏠마크 저장 리스트에 추가할 SolmarkPlace 객체 리스트
     List<SolmarkPlace> solmarkPlaces =
         collections.stream()
-            .map(c -> SolmarkPlace.builder().solmarkPlaceCollection(c).place(place).build())
+            .map(
+                c -> {
+                  // 각 장소 리스트별 최대 장소 저장 개수 검증
+                  validateCollectionPlaceLimit(c);
+
+                  return SolmarkPlace.builder().solmarkPlaceCollection(c).place(place).build();
+                })
             .toList();
 
     solmarkPlaceRepository.saveAll(solmarkPlaces);
+  }
+
+  private List<SolmarkPlaceCollection> validateAndGetCollections(User user, List<Long> ids) {
+    List<SolmarkPlaceCollection> cols =
+        solmarkPlaceCollectionRepository.findByUserAndId_In(user, ids);
+    if (cols.size() != ids.size()) {
+      throw new CustomException(ErrorCode.COLLECTION_NOT_FOUND);
+    }
+    return cols;
+  }
+
+  private void validateCollectionPlaceLimit(SolmarkPlaceCollection c) {
+    if (c.getSolmarkPlaces().size() >= MAX_PLACES_PER_COLLECTION) {
+      throw new CustomException(ErrorCode.EXCEEDED_MARK_PLACE_LIMIT);
+    }
+  }
+
+  private void validateCollectionPlaceDuplicate(
+      List<SolmarkPlaceCollection> collections, Place place) {
+    if (solmarkPlaceRepository.existsBySolmarkPlaceCollectionInAndPlace(collections, place)) {
+      throw new CustomException(ErrorCode.DUPLICATED_MARK_PLACE);
+    }
   }
 }
