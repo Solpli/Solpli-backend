@@ -552,7 +552,7 @@ public class SollectService {
 
     // 쏠마크 장소 조회
     List<SolmarkPlace> solmarkPlaces =
-        solmarkPlaceRepository.findBySolmarkPlaceCollection_UserAndPlace_idIn(user, placeIds);
+        solmarkPlaceRepository.findAllNonDeletedByUserAndPlaceIds(user, placeIds);
 
     // 쏠마크 장소 ID Set 반환
     return solmarkPlaces.stream().map(sp -> sp.getPlace().getId()).collect(Collectors.toSet());
