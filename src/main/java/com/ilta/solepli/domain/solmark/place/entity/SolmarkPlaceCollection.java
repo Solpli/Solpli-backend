@@ -34,5 +34,6 @@ public class SolmarkPlaceCollection {
   private int iconId;
 
   @OneToMany(mappedBy = "solmarkPlaceCollection", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Builder.Default
   private List<SolmarkPlace> solmarkPlaces = new ArrayList<>();
 }
