@@ -21,4 +21,13 @@ public interface SolmarkPlaceCollectionRepository
     WHERE spc.user = :user AND spc.id IN :collectionIds
 """)
   List<SolmarkPlaceCollection> findByUserAndId_In(User user, List<Long> collectionIds);
+
+  @Query(
+      """
+      SELECT spc
+      FROM SolmarkPlaceCollection spc
+      LEFT JOIN FETCH spc.solmarkPlaces sp
+      WHERE spc.user = :user
+   """)
+  List<SolmarkPlaceCollection> findByUser(User user);
 }
