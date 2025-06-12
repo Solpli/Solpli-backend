@@ -18,7 +18,7 @@ public interface SolmarkPlaceCollectionRepository
     SELECT DISTINCT spc
     FROM SolmarkPlaceCollection spc
     JOIN FETCH spc.solmarkPlaces sp
-    WHERE spc.user = :user AND spc.id IN :collectionIds
+    WHERE spc.user = :user AND spc.id IN :collectionIds AND spc.deletedAt IS NULL
 """)
   List<SolmarkPlaceCollection> findByUserAndId_In(User user, List<Long> collectionIds);
 
@@ -27,7 +27,7 @@ public interface SolmarkPlaceCollectionRepository
       SELECT spc
       FROM SolmarkPlaceCollection spc
       LEFT JOIN FETCH spc.solmarkPlaces sp
-      WHERE spc.user = :user
+      WHERE spc.user = :user AND spc.deletedAt IS NULL
    """)
   List<SolmarkPlaceCollection> findByUser(User user);
 }
