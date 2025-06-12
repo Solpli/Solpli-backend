@@ -12,6 +12,7 @@ import com.ilta.solepli.domain.place.entity.Place;
 import com.ilta.solepli.domain.place.repository.PlaceRepository;
 import com.ilta.solepli.domain.solmark.place.dto.reqeust.AddSolmarkPlaceRequest;
 import com.ilta.solepli.domain.solmark.place.dto.reqeust.CreateCollectionRequest;
+import com.ilta.solepli.domain.solmark.place.dto.response.CollectionResponse;
 import com.ilta.solepli.domain.solmark.place.entity.SolmarkPlace;
 import com.ilta.solepli.domain.solmark.place.entity.SolmarkPlaceCollection;
 import com.ilta.solepli.domain.solmark.place.repository.SolmarkPlaceCollectionRepository;
@@ -111,5 +112,30 @@ public class SolmarkPlaceService {
     if (solmarkPlaceRepository.existsBySolmarkPlaceCollectionInAndPlace(collections, place)) {
       throw new CustomException(ErrorCode.DUPLICATED_MARK_PLACE);
     }
+  }
+
+  @Transactional(readOnly = true)
+  public List<CollectionResponse> getCollections(CustomUserDetails customUserDetails) {
+    User user = customUserDetails.user();
+
+    // 사용자 쏠마크 -장소 저장 리스트 조회
+    List<SolmarkPlaceCollection> solmarkPlaceCollections =
+        solmarkPlaceCollectionRepository.findByUser(user);
+
+    return solmarkPlaceCollections.stream()
+        // CollectionResponse DTO 매핑
+        .map(this::mapToCollectionResponse)
+        .toList();
+  }
+
+  private CollectionResponse mapToCollectionResponse(SolmarkPlaceCollection spc) {
+    int placeCount = spc.getSolmarkPlaces().size();
+
+    return CollectionResponse.builder()
+        .collectionId(spc.getId())
+        .iconId(spc.getIconId())
+        .collectionName(spc.getName())
+        .placeCount(placeCount)
+        .build();
   }
 }

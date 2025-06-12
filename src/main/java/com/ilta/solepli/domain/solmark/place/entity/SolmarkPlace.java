@@ -6,6 +6,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import com.ilta.solepli.domain.place.entity.Place;
+import com.ilta.solepli.global.entity.Timestamped;
 
 @Entity
 @Getter
@@ -13,7 +14,7 @@ import com.ilta.solepli.domain.place.entity.Place;
 @AllArgsConstructor
 @Builder
 @Table(name = "solmark_places")
-public class SolmarkPlace {
+public class SolmarkPlace extends Timestamped {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

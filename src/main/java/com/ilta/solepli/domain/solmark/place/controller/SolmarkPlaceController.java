@@ -1,5 +1,7 @@
 package com.ilta.solepli.domain.solmark.place.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -12,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 import com.ilta.solepli.domain.solmark.place.dto.reqeust.AddSolmarkPlaceRequest;
 import com.ilta.solepli.domain.solmark.place.dto.reqeust.CreateCollectionRequest;
+import com.ilta.solepli.domain.solmark.place.dto.response.CollectionResponse;
 import com.ilta.solepli.domain.solmark.place.service.SolmarkPlaceService;
 import com.ilta.solepli.domain.user.util.CustomUserDetails;
 import com.ilta.solepli.global.response.SuccessResponse;
@@ -46,5 +49,15 @@ public class SolmarkPlaceController {
 
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(SuccessResponse.successWithNoData("쏠마크 장소 추가 성공"));
+  }
+
+  @Operation(summary = "쏠마크 장소 저장 리스트 조회 API", description = "쏠마크 장소 저장 리스트 조회 API 입니다.")
+  @GetMapping("collections")
+  public ResponseEntity<SuccessResponse<List<CollectionResponse>>> getCollections(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+    List<CollectionResponse> response = solmarkPlaceService.getCollections(customUserDetails);
+
+    return ResponseEntity.ok().body(SuccessResponse.successWithData(response));
   }
 }
