@@ -13,6 +13,8 @@ import com.ilta.solepli.domain.place.repository.PlaceRepository;
 import com.ilta.solepli.domain.solmark.place.dto.reqeust.AddSolmarkPlaceRequest;
 import com.ilta.solepli.domain.solmark.place.dto.reqeust.CreateCollectionRequest;
 import com.ilta.solepli.domain.solmark.place.dto.response.CollectionResponse;
+import com.ilta.solepli.domain.solmark.place.dto.response.SolmarkPlaceDto;
+import com.ilta.solepli.domain.solmark.place.dto.response.SolmarkPlacesResponse;
 import com.ilta.solepli.domain.solmark.place.entity.SolmarkPlace;
 import com.ilta.solepli.domain.solmark.place.entity.SolmarkPlaceCollection;
 import com.ilta.solepli.domain.solmark.place.repository.SolmarkPlaceCollectionRepository;
@@ -21,6 +23,7 @@ import com.ilta.solepli.domain.user.entity.User;
 import com.ilta.solepli.domain.user.util.CustomUserDetails;
 import com.ilta.solepli.global.exception.CustomException;
 import com.ilta.solepli.global.exception.ErrorCode;
+import com.ilta.solepli.global.util.PlaceUtil;
 
 @Slf4j
 @Service
@@ -33,6 +36,7 @@ public class SolmarkPlaceService {
 
   private static final int MAX_PLACES_PER_COLLECTION = 100;
   private static final int MAX_COLLECTIONS_PER_USER = 50;
+  private static final int TAG_LIMIT = 3;
 
   @Transactional
   public void createCollection(
@@ -103,6 +107,7 @@ public class SolmarkPlaceService {
 
   private void validateCollectionPlaceLimit(SolmarkPlaceCollection c) {
     if (c.getSolmarkPlaces().size() >= MAX_PLACES_PER_COLLECTION) {
+      // TODO: 삭제된 경우도 생각, size말고 삭제되지 않은 장소들의 개수를 조죄해야함
       throw new CustomException(ErrorCode.EXCEEDED_MARK_PLACE_LIMIT);
     }
   }
@@ -136,6 +141,41 @@ public class SolmarkPlaceService {
         .iconId(spc.getIconId())
         .collectionName(spc.getName())
         .placeCount(placeCount)
+        .build();
+  }
+
+  @Transactional(readOnly = true)
+  public SolmarkPlacesResponse getSolmarkPlaces(
+      CustomUserDetails customUserDetails, Long collectionId) {
+
+    // 특정 쏠마크 장소 저장 리스트(collectionId) 조회
+    List<SolmarkPlace> solmarkplaces =
+        solmarkPlaceRepository.findByUserAndCollectionId(customUserDetails.user(), collectionId);
+    // 쏠마크 장소 개수
+    int placeCount = solmarkplaces.size();
+
+    // 쏠마크 장소 조회 DTO 매핑
+    List<SolmarkPlaceDto> solmarkPlaceDtos =
+        solmarkplaces.stream().map(this::mapToSolmarkPlaceDto).toList();
+
+    return SolmarkPlacesResponse.of(solmarkPlaceDtos, placeCount);
+  }
+
+  private SolmarkPlaceDto mapToSolmarkPlaceDto(SolmarkPlace sp) {
+    Long placeId = sp.getPlace().getId();
+    String name = sp.getPlace().getName();
+    String detailedCategory = sp.getPlace().getTypes();
+    Integer recommendationPercent = placeRepository.getRecommendationPercent(placeId);
+    List<String> tags = placeRepository.getTopTagsForPlace(placeId, TAG_LIMIT);
+    Double rating = PlaceUtil.truncateTo2Decimals(sp.getPlace().getRating());
+
+    return SolmarkPlaceDto.builder()
+        .PlaceId(placeId)
+        .name(name)
+        .detailedCategory(detailedCategory)
+        .recommendationPercent(recommendationPercent)
+        .tags(tags)
+        .rating(rating)
         .build();
   }
 }
