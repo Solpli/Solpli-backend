@@ -37,4 +37,15 @@ public class SolmarkPlaceCollection extends Timestamped {
   @OneToMany(mappedBy = "solmarkPlaceCollection", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
   private List<SolmarkPlace> solmarkPlaces = new ArrayList<>();
+
+  // 저장 리스트 수정
+  public void updateInfo(String name, Integer iconId) {
+    if (name != null) {
+      this.name = name;
+    }
+
+    if (iconId != null) {
+      this.iconId = iconId;
+    }
+  }
 }
