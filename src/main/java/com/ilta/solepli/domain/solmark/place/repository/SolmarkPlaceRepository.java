@@ -26,4 +26,17 @@ public interface SolmarkPlaceRepository extends JpaRepository<SolmarkPlace, Long
 
   Boolean existsBySolmarkPlaceCollectionInAndPlace(
       List<SolmarkPlaceCollection> solmarkPlaceCollection, Place place);
+
+  @Query(
+      """
+    SELECT sp
+    FROM SolmarkPlace sp
+    JOIN sp.solmarkPlaceCollection spc
+    JOIN FETCH sp.place p
+    WHERE spc.deletedAt IS NULL
+    AND sp.deletedAt IS NULL
+    AND spc.user = :user
+    AND spc.id = :collectionId
+""")
+  List<SolmarkPlace> findByUserAndCollectionId(User user, Long collectionId);
 }

@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import com.ilta.solepli.domain.solmark.place.dto.reqeust.AddSolmarkPlaceRequest;
 import com.ilta.solepli.domain.solmark.place.dto.reqeust.CreateCollectionRequest;
 import com.ilta.solepli.domain.solmark.place.dto.response.CollectionResponse;
+import com.ilta.solepli.domain.solmark.place.dto.response.SolmarkPlacesResponse;
 import com.ilta.solepli.domain.solmark.place.service.SolmarkPlaceService;
 import com.ilta.solepli.domain.user.util.CustomUserDetails;
 import com.ilta.solepli.global.response.SuccessResponse;
@@ -57,6 +58,18 @@ public class SolmarkPlaceController {
       @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
     List<CollectionResponse> response = solmarkPlaceService.getCollections(customUserDetails);
+
+    return ResponseEntity.ok().body(SuccessResponse.successWithData(response));
+  }
+
+  @Operation(summary = "쏠마크 장소 리스트 조회 API", description = "쏠마크 장소 리스트 조회 API 입니다.")
+  @GetMapping("/collections/{collectionId}/places")
+  public ResponseEntity<SuccessResponse<SolmarkPlacesResponse>> getSolmarkPlaces(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails,
+      @PathVariable Long collectionId) {
+
+    SolmarkPlacesResponse response =
+        solmarkPlaceService.getSolmarkPlaces(customUserDetails, collectionId);
 
     return ResponseEntity.ok().body(SuccessResponse.successWithData(response));
   }
