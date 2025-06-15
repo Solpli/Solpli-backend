@@ -1,6 +1,7 @@
 package com.ilta.solepli.domain.solmark.place.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -30,4 +31,14 @@ public interface SolmarkPlaceCollectionRepository
       WHERE spc.user = :user AND spc.deletedAt IS NULL
    """)
   List<SolmarkPlaceCollection> findByUser(User user);
+
+  @Query(
+      """
+    SELECT spc
+    FROM SolmarkPlaceCollection spc
+    WHERE spc.user = :user
+    AND spc.id = :id
+    AND spc.deletedAt IS NULL
+""")
+  Optional<SolmarkPlaceCollection> findByIdAndUser(Long id, User user);
 }

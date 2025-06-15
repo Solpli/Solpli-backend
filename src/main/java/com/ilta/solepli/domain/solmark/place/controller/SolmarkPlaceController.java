@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 import com.ilta.solepli.domain.solmark.place.dto.reqeust.AddSolmarkPlaceRequest;
 import com.ilta.solepli.domain.solmark.place.dto.reqeust.CreateCollectionRequest;
+import com.ilta.solepli.domain.solmark.place.dto.reqeust.UpdateCollectionRequest;
 import com.ilta.solepli.domain.solmark.place.dto.response.CollectionResponse;
 import com.ilta.solepli.domain.solmark.place.dto.response.SolmarkPlacesResponse;
 import com.ilta.solepli.domain.solmark.place.service.SolmarkPlaceService;
@@ -72,5 +73,17 @@ public class SolmarkPlaceController {
         solmarkPlaceService.getSolmarkPlaces(customUserDetails, collectionId);
 
     return ResponseEntity.ok().body(SuccessResponse.successWithData(response));
+  }
+
+  @Operation(summary = "쏠마크 장소 저장 리스트 수정 API", description = "쏠마크 장소 저장 리스트 수정 API 입니다.")
+  @PatchMapping("/collections/{collectionId}")
+  public ResponseEntity<SuccessResponse<Void>> updateCollection(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails,
+      @PathVariable Long collectionId,
+      @Valid @RequestBody UpdateCollectionRequest updateCollectionRequest) {
+
+    solmarkPlaceService.updateCollection(customUserDetails, collectionId, updateCollectionRequest);
+
+    return ResponseEntity.ok().body(SuccessResponse.successWithNoData("쏠마크 저장 리스트 수정 성공"));
   }
 }

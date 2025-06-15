@@ -12,6 +12,7 @@ import com.ilta.solepli.domain.place.entity.Place;
 import com.ilta.solepli.domain.place.repository.PlaceRepository;
 import com.ilta.solepli.domain.solmark.place.dto.reqeust.AddSolmarkPlaceRequest;
 import com.ilta.solepli.domain.solmark.place.dto.reqeust.CreateCollectionRequest;
+import com.ilta.solepli.domain.solmark.place.dto.reqeust.UpdateCollectionRequest;
 import com.ilta.solepli.domain.solmark.place.dto.response.CollectionResponse;
 import com.ilta.solepli.domain.solmark.place.dto.response.SolmarkPlaceDto;
 import com.ilta.solepli.domain.solmark.place.dto.response.SolmarkPlacesResponse;
@@ -107,7 +108,6 @@ public class SolmarkPlaceService {
 
   private void validateCollectionPlaceLimit(SolmarkPlaceCollection c) {
     if (c.getSolmarkPlaces().size() >= MAX_PLACES_PER_COLLECTION) {
-      // TODO: 삭제된 경우도 생각, size말고 삭제되지 않은 장소들의 개수를 조죄해야함
       throw new CustomException(ErrorCode.EXCEEDED_MARK_PLACE_LIMIT);
     }
   }
@@ -177,5 +177,26 @@ public class SolmarkPlaceService {
         .tags(tags)
         .rating(rating)
         .build();
+  }
+
+  @Transactional
+  public void updateCollection(
+      CustomUserDetails customUserDetails,
+      Long collectionId,
+      UpdateCollectionRequest updateCollectionRequest) {
+    User user = customUserDetails.user();
+
+    // 사용자의 쏠마크 저장 리스트 조회
+    SolmarkPlaceCollection solmarkPlaceCollection =
+        solmarkPlaceCollectionRepository
+            .findByIdAndUser(collectionId, user)
+            .orElseThrow(() -> new CustomException(ErrorCode.COLLECTION_NOT_FOUND));
+
+    // 수정할 저장 리스트 이름과 아이콘 번호
+    String updateName = updateCollectionRequest.collectionName();
+    Integer updateIconId = updateCollectionRequest.iconId();
+
+    // 쏠마크 저장 리스트 수정
+    solmarkPlaceCollection.updateInfo(updateName, updateIconId);
   }
 }
