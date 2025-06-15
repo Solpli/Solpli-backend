@@ -199,4 +199,15 @@ public class SolmarkPlaceService {
     // 쏠마크 저장 리스트 수정
     solmarkPlaceCollection.updateInfo(updateName, updateIconId);
   }
+
+  @Transactional
+  public void deleteCollection(CustomUserDetails customUserDetails, Long collectionId) {
+    User user = customUserDetails.user();
+
+    // 쏠마크 저장 리스트 삭제
+    solmarkPlaceCollectionRepository
+        .findByIdAndUser(collectionId, user)
+        .orElseThrow(() -> new CustomException(ErrorCode.COLLECTION_NOT_FOUND))
+        .softDelete(); // delete 시점 기록
+  }
 }

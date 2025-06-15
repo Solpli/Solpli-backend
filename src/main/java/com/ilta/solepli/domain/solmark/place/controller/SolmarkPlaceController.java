@@ -86,4 +86,15 @@ public class SolmarkPlaceController {
 
     return ResponseEntity.ok().body(SuccessResponse.successWithNoData("쏠마크 저장 리스트 수정 성공"));
   }
+
+  @Operation(summary = "쏠마크 장소 저장 리스트 삭제 API", description = "쏠마크 장소 저장 리스트 삭제 API 입니다.")
+  @DeleteMapping("/collections/{collectionId}")
+  public ResponseEntity<SuccessResponse<Void>> deleteCollection(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails,
+      @PathVariable Long collectionId) {
+
+    solmarkPlaceService.deleteCollection(customUserDetails, collectionId);
+
+    return ResponseEntity.ok().body(SuccessResponse.successWithNoData("쏠마크 저장 리스트 삭제 성공"));
+  }
 }
