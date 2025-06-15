@@ -206,6 +206,8 @@ public class SollectRepositoryImpl implements SollectRepositoryCustom {
       condition.and(matchSollectTitle(keyword).or(matchSollectText(keyword)));
     }
 
+    QSolmarkSollect solmark = QSolmarkSollect.solmarkSollect;
+
     // 해당 조건에 해당하고, 쏠마크가 많은 쏠렉트 아이디 8개 추출
     List<Long> sollectIds =
         queryFactory
@@ -214,11 +216,11 @@ public class SollectRepositoryImpl implements SollectRepositoryCustom {
             .leftJoin(sollect.sollectContents, sollectContent)
             .leftJoin(sollect.sollectPlaces, sollectPlace)
             .leftJoin(sollectPlace.place, place)
-            .leftJoin(solmarkSollect, solmarkSollect)
-            .on(solmarkSollect.sollect.eq(sollect))
+            .leftJoin(solmark)
+            .on(solmark.sollect.eq(sollect))
             .where(condition, sollect.deletedAt.isNull())
             .groupBy(sollect.id)
-            .orderBy(solmarkSollect.id.count().desc())
+            .orderBy(solmark.id.count().desc())
             .limit(8)
             .fetch();
 
@@ -273,6 +275,6 @@ public class SollectRepositoryImpl implements SollectRepositoryCustom {
     return sollectContent
         .type
         .eq(ContentType.TEXT)
-        .and(sollectContent.text.containsIgnoreCase(keyword));
+        .and(sollectContent.text.stringValue().like("%" + keyword + "%"));
   }
 }
