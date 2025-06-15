@@ -20,4 +20,7 @@ public interface SollectRepositoryCustom {
 
   List<SollectSearchResponseContent> searchSollectBySollectIdsAndCursor(
       Long cursorId, int size, List<Long> sollectIds);
+
+  List<SollectSearchResponseContent> searchRecommendSollectByKeywordOrCategory(
+      String keyword, String categoryName);
 }

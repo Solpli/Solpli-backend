@@ -32,6 +32,7 @@ import com.ilta.solepli.domain.sollect.dto.response.SollectDetailResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectPlaceAddPreviewResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectSearchResponse;
 import com.ilta.solepli.domain.sollect.dto.response.SollectSearchResponse.PopularSollectContent;
+import com.ilta.solepli.domain.sollect.dto.response.SollectSearchResponse.SollectSearchContent;
 import com.ilta.solepli.domain.sollect.service.SollectService;
 import com.ilta.solepli.domain.user.entity.User;
 import com.ilta.solepli.domain.user.util.CustomUserDetails;
@@ -195,5 +196,21 @@ public class SollectController {
         sollectService.getPlaceRelatedSollect(user, placeId, cursorId, size);
 
     return ResponseEntity.ok(SuccessResponse.successWithData(relatedSollects));
+  }
+
+  @Operation(summary = "추천 쏠렉트 조회 API", description = "키워드 + 카테고리를 and 조건으로 만족하는 쏠렉트를 조회 API 입니다.")
+  @GetMapping("/recommend")
+  public ResponseEntity<SuccessResponse<List<SollectSearchResponse.SollectSearchContent>>>
+      getRecommendSollects(
+          @AuthenticationPrincipal CustomUserDetails customUserDetails,
+          @RequestParam(required = false) String keyword,
+          @RequestParam(required = true) String categoryName) {
+
+    User user = SecurityUtil.getUser(customUserDetails);
+
+    List<SollectSearchContent> sollectSearchContents =
+        sollectService.recommendSollect(keyword, categoryName, user);
+
+    return ResponseEntity.ok(SuccessResponse.successWithData(sollectSearchContents));
   }
 }
