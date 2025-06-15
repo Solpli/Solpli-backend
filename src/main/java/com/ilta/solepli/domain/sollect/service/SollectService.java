@@ -393,24 +393,12 @@ public class SollectService {
     boolean hasNext = rawContents.size() > size;
     if (hasNext) rawContents.remove(size); // 커서 페이징이므로 초과 1개 제거
 
-    Set<Long> markedSet =
-        (user == null)
-            ? Collections.emptySet()
-            : new HashSet<>(solmarkSollectRepository.findSollectIdsByUser(user));
+    Set<Long> markedSet = getMarkedSet(user);
 
     List<SollectSearchResponse.SollectSearchContent> converted =
         toResponseContent(rawContents, markedSet);
 
-    Long nextCursorId = hasNext ? converted.get(converted.size() - 1).sollectId() : null;
-
-    return SollectSearchResponse.builder()
-        .contents(converted)
-        .cursorInfo(
-            SollectSearchResponse.CursorInfo.builder()
-                .nextCursorId(nextCursorId)
-                .hasNext(hasNext)
-                .build())
-        .build();
+    return toSollectSearchResponse(hasNext, converted);
   }
 
   @Transactional(readOnly = true)
@@ -439,10 +427,7 @@ public class SollectService {
             .collect(Collectors.toList());
 
     // 해당 유저의 쏠렉트 저장여부
-    Set<Long> markedSet =
-        (user == null)
-            ? Collections.emptySet()
-            : new HashSet<>(solmarkSollectRepository.findSollectIdsByUser(user));
+    Set<Long> markedSet = getMarkedSet(user);
 
     return toResponsePopularContent(sortedContents, markedSet);
   }
@@ -460,24 +445,24 @@ public class SollectService {
     boolean hasNext = rawContents.size() > size;
     if (hasNext) rawContents.remove(size); // 커서 페이징이므로 초과 1개 제거
 
-    Set<Long> markedSet =
-        (user == null)
-            ? Collections.emptySet()
-            : new HashSet<>(solmarkSollectRepository.findSollectIdsByUser(user));
+    Set<Long> markedSet = getMarkedSet(user);
 
     List<SollectSearchResponse.SollectSearchContent> converted =
         toResponseContent(rawContents, markedSet);
 
-    Long nextCursorId = hasNext ? converted.get(converted.size() - 1).sollectId() : null;
+    return toSollectSearchResponse(hasNext, converted);
+  }
 
-    return SollectSearchResponse.builder()
-        .contents(converted)
-        .cursorInfo(
-            SollectSearchResponse.CursorInfo.builder()
-                .nextCursorId(nextCursorId)
-                .hasNext(hasNext)
-                .build())
-        .build();
+  @Transactional(readOnly = true)
+  public List<SollectSearchResponse.SollectSearchContent> recommendSollect(
+      String keyword, String categoryName, User user) {
+
+    List<SollectSearchResponseContent> rawContents =
+        sollectRepositoryCustom.searchRecommendSollectByKeywordOrCategory(keyword, categoryName);
+
+    Set<Long> markedSet = getMarkedSet(user);
+
+    return toResponseContent(rawContents, markedSet);
   }
 
   private SollectContent findImage(List<SollectContent> sollectContents, String filename) {
@@ -556,5 +541,25 @@ public class SollectService {
 
     // 쏠마크 장소 ID Set 반환
     return solmarkPlaces.stream().map(sp -> sp.getPlace().getId()).collect(Collectors.toSet());
+  }
+
+  private Set<Long> getMarkedSet(User user) {
+    return (user == null)
+        ? Collections.emptySet()
+        : new HashSet<>(solmarkSollectRepository.findSollectIdsByUser(user));
+  }
+
+  private SollectSearchResponse toSollectSearchResponse(
+      boolean hasNext, List<SollectSearchResponse.SollectSearchContent> converted) {
+    Long nextCursorId = hasNext ? converted.get(converted.size() - 1).sollectId() : null;
+
+    return SollectSearchResponse.builder()
+        .contents(converted)
+        .cursorInfo(
+            SollectSearchResponse.CursorInfo.builder()
+                .nextCursorId(nextCursorId)
+                .hasNext(hasNext)
+                .build())
+        .build();
   }
 }
