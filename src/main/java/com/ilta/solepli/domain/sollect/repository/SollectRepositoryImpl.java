@@ -1,6 +1,9 @@
 package com.ilta.solepli.domain.sollect.repository;
 
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -224,27 +227,35 @@ public class SollectRepositoryImpl implements SollectRepositoryCustom {
             .limit(8)
             .fetch();
 
+    Map<Long, Integer> orderMap = new HashMap<>();
+    for (int i = 0; i < sollectIds.size(); i++) {
+      orderMap.put(sollectIds.get(i), i); // ID를 key로, 순서를 value로 저장
+    }
+
     QSollectPlace firstPlace = new QSollectPlace("firstPlace");
     QPlace firstPlaceInfo = new QPlace("firstPlaceInfo");
 
     // DTO 반환
-    return queryFactory
-        .select(
-            new QSollectSearchResponseContent(
-                sollect.id,
-                sollectContent.imageUrl,
-                sollect.title,
-                firstPlaceInfo.district,
-                firstPlaceInfo.neighborhood))
-        .from(sollect)
-        .join(sollect.sollectPlaces, firstPlace)
-        .on(firstPlace.seq.eq(0))
-        .join(firstPlace.place, firstPlaceInfo)
-        .join(sollect.sollectContents, sollectContent)
-        .on(sollectContent.seq.eq(0L))
-        .where(sollect.id.in(sollectIds))
-        .orderBy(sollect.id.desc())
-        .fetch();
+    List<SollectSearchResponseContent> results =
+        queryFactory
+            .select(
+                new QSollectSearchResponseContent(
+                    sollect.id,
+                    sollectContent.imageUrl,
+                    sollect.title,
+                    firstPlaceInfo.district,
+                    firstPlaceInfo.neighborhood))
+            .from(sollect)
+            .join(sollect.sollectPlaces, firstPlace)
+            .on(firstPlace.seq.eq(0))
+            .join(firstPlace.place, firstPlaceInfo)
+            .join(sollect.sollectContents, sollectContent)
+            .on(sollectContent.seq.eq(0L))
+            .where(sollect.id.in(sollectIds))
+            .orderBy(sollect.id.desc())
+            .fetch();
+    results.sort(Comparator.comparingInt(dto -> orderMap.get(dto.sollectId())));
+    return results;
   }
 
   private BooleanExpression anyMatchKeyword(String keyword) {
