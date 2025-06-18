@@ -67,7 +67,7 @@ public class SolrouteController {
   }
 
   @Operation(summary = "쏠루트 코스 상태 변경 API", description = "쏠루트 코스의 상태를 변경할때 사용하는 API입니다.")
-  @PatchMapping("/{solrotueId}")
+  @PatchMapping("/{solrotueId}/status")
   public ResponseEntity<SuccessResponse<Void>> updateSolrouteStatus(
       @AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable Long solrotueId) {
 
