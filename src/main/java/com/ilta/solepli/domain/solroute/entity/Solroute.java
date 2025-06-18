@@ -63,7 +63,8 @@ public class Solroute extends Timestamped {
     solroutePlace.setSolroute(this);
   }
 
-  public void updateStatus() {
+  public String updateStatus() {
     this.status = this.status.update();
+    return this.status.getDescription();
   }
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -63,5 +64,15 @@ public class SolrouteController {
     PlacePreviewResponse placePreview = solrouteService.getPlacePreview(placeId);
 
     return ResponseEntity.ok(SuccessResponse.successWithData(placePreview));
+  }
+
+  @Operation(summary = "쏠루트 코스 상태 변경 API", description = "쏠루트 코스의 상태를 변경할때 사용하는 API입니다.")
+  @PatchMapping("/{solrotueId}")
+  public ResponseEntity<SuccessResponse<Void>> updateSolrouteStatus(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable Long solrotueId) {
+
+    String status = solrouteService.updateSolrouteStatus(solrotueId, customUserDetails.user());
+    return ResponseEntity.status(200)
+        .body(SuccessResponse.successWithNoData("쏠루트 상태 " + status + "(으)로 변경 완료."));
   }
 }
