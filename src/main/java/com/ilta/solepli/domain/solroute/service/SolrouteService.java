@@ -21,6 +21,7 @@ import com.ilta.solepli.domain.solroute.dto.request.SolrouteCreateRequest;
 import com.ilta.solepli.domain.solroute.dto.request.SolrouteCreateRequest.PlaceInfo;
 import com.ilta.solepli.domain.solroute.dto.response.PlacePreviewResponse;
 import com.ilta.solepli.domain.solroute.dto.response.PlaceSummaryResponse;
+import com.ilta.solepli.domain.solroute.dto.response.SolroutePreviewResponse;
 import com.ilta.solepli.domain.solroute.entity.Solroute;
 import com.ilta.solepli.domain.solroute.entity.SolroutePlace;
 import com.ilta.solepli.domain.solroute.repository.SolroutePlaceRepository;
@@ -142,6 +143,13 @@ public class SolrouteService {
     Solroute solroute = getSolrouteOrThrow(solrouteId, user);
 
     return solroute.updateStatus();
+  }
+
+  @Transactional(readOnly = true)
+  public List<SolroutePreviewResponse> getSolroutePreviews(User user) {
+    return solrouteRepository.findAllByUserId(user).stream()
+        .map(SolroutePreviewResponse::from)
+        .toList();
   }
 
   private Set<Long> getSolmarkedPlaceIds(User user, List<Place> places) {
