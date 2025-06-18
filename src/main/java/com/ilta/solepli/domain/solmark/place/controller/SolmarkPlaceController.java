@@ -83,4 +83,17 @@ public class SolmarkPlaceController {
 
     return ResponseEntity.ok().body(SuccessResponse.successWithNoData("쏠마크 저장 리스트 삭제 성공"));
   }
+
+  @Operation(summary = "쏠마크 장소 추가 및 삭제 API", description = "쏠마크 장소 추가 및 삭제 API 입니다.")
+  @PatchMapping("/{placeId}/collections")
+  public ResponseEntity<SuccessResponse<Void>> updatePlaceCollections(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails,
+      @PathVariable Long placeId,
+      @RequestBody UpdatePlaceCollectionsRequest updatePlaceCollectionsRequest) {
+
+    solmarkPlaceService.updatePlaceCollections(
+        customUserDetails, placeId, updatePlaceCollectionsRequest);
+
+    return ResponseEntity.ok().body(SuccessResponse.successWithNoData("쏠마크 장소 업데이트 성공"));
+  }
 }
