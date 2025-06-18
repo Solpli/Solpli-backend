@@ -21,6 +21,7 @@ import com.ilta.solepli.domain.solroute.dto.request.SolrouteCreateRequest;
 import com.ilta.solepli.domain.solroute.dto.request.SolrouteCreateRequest.PlaceInfo;
 import com.ilta.solepli.domain.solroute.dto.response.PlacePreviewResponse;
 import com.ilta.solepli.domain.solroute.dto.response.PlaceSummaryResponse;
+import com.ilta.solepli.domain.solroute.dto.response.SolroutePreviewResponse;
 import com.ilta.solepli.domain.solroute.entity.Solroute;
 import com.ilta.solepli.domain.solroute.entity.SolroutePlace;
 import com.ilta.solepli.domain.solroute.repository.SolroutePlaceRepository;
@@ -137,6 +138,20 @@ public class SolrouteService {
         .build();
   }
 
+  @Transactional
+  public String updateSolrouteStatus(Long solrouteId, User user) {
+    Solroute solroute = getSolrouteOrThrow(solrouteId, user);
+
+    return solroute.updateStatus();
+  }
+
+  @Transactional(readOnly = true)
+  public List<SolroutePreviewResponse> getSolroutePreviews(User user) {
+    return solrouteRepository.findAllByUserId(user).stream()
+        .map(SolroutePreviewResponse::from)
+        .toList();
+  }
+
   private Set<Long> getSolmarkedPlaceIds(User user, List<Place> places) {
     // 비로그인이거나 조회된 장소가 없으면 빈 Set 반환
     if (user == null & places.isEmpty()) {
@@ -151,5 +166,11 @@ public class SolrouteService {
 
     // 쏠마크 장소 ID Set 반환
     return solmarkPlaces.stream().map(sp -> sp.getPlace().getId()).collect(Collectors.toSet());
+  }
+
+  private Solroute getSolrouteOrThrow(Long solrouteId, User user) {
+    return solrouteRepository
+        .findByIdAndUser(solrouteId, user)
+        .orElseThrow(() -> new CustomException(ErrorCode.SOLROUTE_ACCESS_DENIED));
   }
 }
