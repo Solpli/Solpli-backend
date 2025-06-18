@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import com.ilta.solepli.domain.solroute.dto.request.SolrouteCreateRequest;
 import com.ilta.solepli.domain.solroute.dto.response.PlacePreviewResponse;
 import com.ilta.solepli.domain.solroute.dto.response.PlaceSummaryResponse;
+import com.ilta.solepli.domain.solroute.dto.response.SolrouteDetailResponse;
 import com.ilta.solepli.domain.solroute.dto.response.SolroutePreviewResponse;
 import com.ilta.solepli.domain.solroute.service.SolrouteService;
 import com.ilta.solepli.domain.user.util.CustomUserDetails;
@@ -84,5 +85,16 @@ public class SolrouteController {
     List<SolroutePreviewResponse> solroutePreviews =
         solrouteService.getSolroutePreviews(customUserDetails.user());
     return ResponseEntity.ok(SuccessResponse.successWithData(solroutePreviews));
+  }
+
+  @Operation(summary = "쏠루트 코스 상세조회 API", description = "쏠루트 코스를 상세 조회할 때 사용하는 API입니다.")
+  @GetMapping({"/{solrotueId}"})
+  public ResponseEntity<SuccessResponse<SolrouteDetailResponse>> getSolrouteDetail(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable Long solrotueId) {
+
+    SolrouteDetailResponse response =
+        solrouteService.getSolrouteDeatil(solrotueId, customUserDetails.user());
+
+    return ResponseEntity.ok(SuccessResponse.successWithData(response));
   }
 }
