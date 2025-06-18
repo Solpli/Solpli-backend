@@ -56,6 +56,7 @@ public class Solroute extends Timestamped {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
+  @Builder.Default
   private SolrouteStatus status = SolrouteStatus.SCHEDULED;
 
   public void addSolroutePlace(SolroutePlace solroutePlace) {
