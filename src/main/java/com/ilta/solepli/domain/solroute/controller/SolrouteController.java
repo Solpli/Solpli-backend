@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import com.ilta.solepli.domain.solroute.dto.request.SolrouteCreateRequest;
 import com.ilta.solepli.domain.solroute.dto.response.PlacePreviewResponse;
 import com.ilta.solepli.domain.solroute.dto.response.PlaceSummaryResponse;
+import com.ilta.solepli.domain.solroute.dto.response.SolroutePreviewResponse;
 import com.ilta.solepli.domain.solroute.service.SolrouteService;
 import com.ilta.solepli.domain.user.util.CustomUserDetails;
 import com.ilta.solepli.global.response.SuccessResponse;
@@ -39,7 +41,7 @@ public class SolrouteController {
 
     solrouteService.createSolroute(customUserDetails.user(), request);
 
-    return ResponseEntity.status(200).body(SuccessResponse.successWithNoData("쏠루트 생성 완료."));
+    return ResponseEntity.status(200).body(SuccessResponse.successWithNoData("쏠루트 생성 완료"));
   }
 
   @Operation(summary = "추가한 장소 근처 인기 장소 조회 API", description = "추가한 장소 근처 인기 장소 조회 API입니다.")
@@ -63,5 +65,24 @@ public class SolrouteController {
     PlacePreviewResponse placePreview = solrouteService.getPlacePreview(placeId);
 
     return ResponseEntity.ok(SuccessResponse.successWithData(placePreview));
+  }
+
+  @Operation(summary = "쏠루트 코스 상태 변경 API", description = "쏠루트 코스의 상태를 변경할때 사용하는 API입니다.")
+  @PatchMapping("/{solrotueId}/status")
+  public ResponseEntity<SuccessResponse<Void>> updateSolrouteStatus(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable Long solrotueId) {
+
+    String status = solrouteService.updateSolrouteStatus(solrotueId, customUserDetails.user());
+    return ResponseEntity.status(200)
+        .body(SuccessResponse.successWithNoData("쏠루트 상태 " + status + "(으)로 변경 완료"));
+  }
+
+  @Operation(summary = "쏠루트 코스 프리뷰 조회 API", description = "쏠루트 코스 프리뷰 리스트를 조회할 때 사용하는 API입니다.")
+  @GetMapping
+  public ResponseEntity<SuccessResponse<List<SolroutePreviewResponse>>> getSolroutePreviews(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    List<SolroutePreviewResponse> solroutePreviews =
+        solrouteService.getSolroutePreviews(customUserDetails.user());
+    return ResponseEntity.ok(SuccessResponse.successWithData(solroutePreviews));
   }
 }

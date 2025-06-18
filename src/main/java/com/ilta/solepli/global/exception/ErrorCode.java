@@ -84,7 +84,11 @@ public enum ErrorCode {
 
   // 쏠마크 - 장소 관련 에러
   COLLECTION_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "저장 리스트는 최대 50개까지만 생성할 수 있습니다."),
-  COLLECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 저장 리스트 입니다.");
+  COLLECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 저장 리스트 입니다."),
+
+  // 쏠루트 관련 에러
+  SOLROUTE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "권한이 없거나 Solroute가 존재하지 않습니다.");
+  ;
 
   private final HttpStatus httpStatus;
   private final String message;
