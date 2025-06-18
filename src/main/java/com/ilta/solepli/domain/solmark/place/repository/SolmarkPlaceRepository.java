@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import com.ilta.solepli.domain.place.entity.Place;
+import com.ilta.solepli.domain.solmark.place.dto.CollectionCountDto;
 import com.ilta.solepli.domain.solmark.place.entity.SolmarkPlace;
 import com.ilta.solepli.domain.solmark.place.entity.SolmarkPlaceCollection;
 import com.ilta.solepli.domain.user.entity.User;
@@ -39,4 +40,14 @@ public interface SolmarkPlaceRepository extends JpaRepository<SolmarkPlace, Long
     AND spc.id = :collectionId
 """)
   List<SolmarkPlace> findByUserAndCollectionId(User user, Long collectionId);
+
+  @Query(
+      """
+    SELECT new com.ilta.solepli.domain.solmark.place.dto.CollectionCountDto(sp.solmarkPlaceCollection.id, COUNT(*))
+    FROM SolmarkPlace sp
+    WHERE sp.solmarkPlaceCollection.id IN :collectionIds
+    AND sp.deletedAt IS NULL
+    GROUP BY sp.solmarkPlaceCollection.id
+""")
+  List<CollectionCountDto> countByCollectionIds(List<Long> collectionIds);
 }

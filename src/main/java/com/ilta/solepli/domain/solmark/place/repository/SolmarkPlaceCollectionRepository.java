@@ -41,4 +41,41 @@ public interface SolmarkPlaceCollectionRepository
     AND spc.deletedAt IS NULL
 """)
   Optional<SolmarkPlaceCollection> findByIdAndUser(Long id, User user);
+
+  @Query(
+      """
+    SELECT spc
+    FROM SolmarkPlaceCollection spc
+    WHERE spc.user = :user
+    AND spc.id IN :collectionIds
+    AND spc.deletedAt IS NULL
+""")
+  List<SolmarkPlaceCollection> findByUserAndIdInAndDeletedAtIsNull(
+      User user, List<Long> collectionIds);
+
+  @Query(
+      """
+    SELECT spc
+    FROM SolmarkPlaceCollection spc
+    JOIN FETCH spc.solmarkPlaces sp
+    WHERE spc.user = :user
+    AND spc.id IN :collectionIds
+    AND spc.deletedAt IS NULL
+""")
+  List<SolmarkPlaceCollection> findByUserAndIdInAndDeletedAtIsNullWithPlaces(
+      User user, List<Long> collectionIds);
+
+  @Query(
+      """
+    SELECT spc.id
+    FROM SolmarkPlace sp
+    JOIN sp.solmarkPlaceCollection spc
+    JOIN sp.place p
+    WHERE spc.user = :user
+    AND p.id = :placeId
+    AND sp.deletedAt IS NULL
+    AND spc.deletedAt IS NULL
+
+""")
+  List<Long> findByUserAndPlaceId(User user, Long placeId);
 }
