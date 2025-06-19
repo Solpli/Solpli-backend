@@ -14,6 +14,10 @@ public interface SolrouteRepository extends JpaRepository<Solroute, Long> {
   @Query("SELECT s FROM Solroute s WHERE s.id = :id AND s.user = :user AND s.deletedAt IS NULL")
   Optional<Solroute> findByIdAndUser(Long id, User user);
 
+  @EntityGraph(attributePaths = {"solroutePlaces", "solroutePlaces.place"})
+  @Query("SELECT s FROM Solroute s WHERE s.id = :id AND s.user = :user AND s.deletedAt IS NULL")
+  Optional<Solroute> findByIdAndUserWithPlaces(Long id, User user);
+
   @EntityGraph(attributePaths = {"solroutePlaces"})
   @Query("SELECT s FROM Solroute s WHERE s.user = :user AND s.deletedAt IS NULL")
   List<Solroute> findAllByUserId(User user);
