@@ -206,6 +206,13 @@ public class SolrouteService {
     }
   }
 
+  @Transactional
+  public void deleteSolroute(Long solrouteId, User user) {
+    Solroute solroute = getSolrouteOrThrow(solrouteId, user);
+
+    solroute.softDelete();
+  }
+
   private Set<Long> getSolmarkedPlaceIds(User user, List<Place> places) {
     // 비로그인이거나 조회된 장소가 없으면 빈 Set 반환
     if (user == null & places.isEmpty()) {
