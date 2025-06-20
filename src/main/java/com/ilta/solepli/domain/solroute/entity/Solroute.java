@@ -68,4 +68,14 @@ public class Solroute extends Timestamped {
     this.status = this.status.update();
     return this.status.getDescription();
   }
+
+  public void updateInfo(Integer iconId, String name) {
+    if (iconId != null && !this.iconId.equals(iconId)) {
+      this.iconId = iconId;
+    }
+
+    if (name != null && !this.name.equals(name)) {
+      this.name = name;
+    }
+  }
 }

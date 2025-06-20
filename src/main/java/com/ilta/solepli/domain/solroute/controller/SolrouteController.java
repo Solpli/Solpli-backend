@@ -18,6 +18,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import com.ilta.solepli.domain.solroute.dto.request.SolrouteCreateRequest;
+import com.ilta.solepli.domain.solroute.dto.request.SolroutePatchRequest;
 import com.ilta.solepli.domain.solroute.dto.response.PlacePreviewResponse;
 import com.ilta.solepli.domain.solroute.dto.response.PlaceSummaryResponse;
 import com.ilta.solepli.domain.solroute.dto.response.SolrouteDetailResponse;
@@ -96,5 +97,17 @@ public class SolrouteController {
         solrouteService.getSolrouteDeatil(solrotueId, customUserDetails.user());
 
     return ResponseEntity.ok(SuccessResponse.successWithData(response));
+  }
+
+  @Operation(summary = "쏠루트 코스 수정 API", description = "쏠루트 코스를 수정할 때 사용하는 API입니다.")
+  @PatchMapping({"/{solrotueId}"})
+  public ResponseEntity<SuccessResponse<Void>> updateSolroute(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails,
+      @RequestBody SolroutePatchRequest request,
+      @PathVariable Long solrotueId) {
+
+    solrouteService.patchSolroute(request, solrotueId, customUserDetails.user());
+
+    return ResponseEntity.status(200).body(SuccessResponse.successWithNoData("쏠루트 수정 완료"));
   }
 }
