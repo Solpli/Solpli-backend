@@ -11,6 +11,8 @@ public enum ErrorCode {
   SAMPLE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "예시: 샘플 에러가 발생했습니다."),
 
   // JWT 액세스 토큰 관련 에러
+  UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
+  TOKEN_MISSING(HttpStatus.UNAUTHORIZED, "액세스 토큰이 없습니다."),
   TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "액세스 토큰이 만료되었습니다."),
   INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 액세스 토큰입니다."),
 
