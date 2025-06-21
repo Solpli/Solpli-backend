@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +19,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import com.ilta.solepli.domain.solroute.dto.request.SolrouteCreateRequest;
+import com.ilta.solepli.domain.solroute.dto.request.SolroutePatchRequest;
 import com.ilta.solepli.domain.solroute.dto.response.PlacePreviewResponse;
 import com.ilta.solepli.domain.solroute.dto.response.PlaceSummaryResponse;
 import com.ilta.solepli.domain.solroute.dto.response.SolrouteDetailResponse;
@@ -96,5 +98,27 @@ public class SolrouteController {
         solrouteService.getSolrouteDeatil(solrotueId, customUserDetails.user());
 
     return ResponseEntity.ok(SuccessResponse.successWithData(response));
+  }
+
+  @Operation(summary = "쏠루트 코스 수정 API", description = "쏠루트 코스를 수정할 때 사용하는 API입니다.")
+  @PatchMapping({"/{solrotueId}"})
+  public ResponseEntity<SuccessResponse<Void>> patchSolroute(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails,
+      @RequestBody SolroutePatchRequest request,
+      @PathVariable Long solrotueId) {
+
+    solrouteService.patchSolroute(request, solrotueId, customUserDetails.user());
+
+    return ResponseEntity.status(200).body(SuccessResponse.successWithNoData("쏠루트 코스 수정 완료"));
+  }
+
+  @Operation(summary = "쏠루트 코스 삭제 API", description = "쏠루트 코스를 삭제할 때 사용하는 API입니다.")
+  @DeleteMapping({"/{solrotueId}"})
+  public ResponseEntity<SuccessResponse<Void>> deleteSolroute(
+      @AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable Long solrotueId) {
+
+    solrouteService.deleteSolroute(solrotueId, customUserDetails.user());
+
+    return ResponseEntity.status(200).body(SuccessResponse.successWithNoData("쏠루트 코스 삭제 완료"));
   }
 }

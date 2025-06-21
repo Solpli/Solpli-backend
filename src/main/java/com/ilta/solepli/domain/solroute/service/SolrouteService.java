@@ -19,6 +19,7 @@ import com.ilta.solepli.domain.solmark.place.repository.SolmarkPlaceRepository;
 import com.ilta.solepli.domain.solroute.dto.PlaceWithReviewCountDto;
 import com.ilta.solepli.domain.solroute.dto.request.SolrouteCreateRequest;
 import com.ilta.solepli.domain.solroute.dto.request.SolrouteCreateRequest.PlaceInfo;
+import com.ilta.solepli.domain.solroute.dto.request.SolroutePatchRequest;
 import com.ilta.solepli.domain.solroute.dto.response.PlacePreviewResponse;
 import com.ilta.solepli.domain.solroute.dto.response.PlaceSummaryResponse;
 import com.ilta.solepli.domain.solroute.dto.response.SolrouteDetailResponse;
@@ -170,6 +171,46 @@ public class SolrouteService {
         .status(solroute.getStatus().getDescription())
         .placeInfos(placeInfos)
         .build();
+  }
+
+  @Transactional
+  public void patchSolroute(SolroutePatchRequest request, Long solrouteId, User user) {
+    Solroute solroute = getSolrouteOrThrow(solrouteId, user);
+
+    solroute.updateInfo(request.iconId(), request.name());
+
+    List<SolroutePatchRequest.PlaceInfo> placeInfos = request.placeInfos();
+
+    if (placeInfos != null) {
+      // 기존 SolroutePlace들 삭제
+      solroutePlaceRepository.deleteAllBySolrouteId(solroute);
+      // 1차 캐시와 동기화
+      solroute.getSolroutePlaces().clear();
+
+      for (SolroutePatchRequest.PlaceInfo placeInfo : placeInfos) {
+        Place place =
+            placeRepository
+                .findById(placeInfo.placeId())
+                .orElseThrow(() -> new CustomException(ErrorCode.PLACE_NOT_EXISTS));
+
+        SolroutePlace solroutePlace =
+            SolroutePlace.builder()
+                .place(place)
+                .memo(placeInfo.memo())
+                .seq(placeInfo.seq())
+                .build();
+
+        // 연관관계 & 리스트 추가
+        solroute.addSolroutePlace(solroutePlace);
+      }
+    }
+  }
+
+  @Transactional
+  public void deleteSolroute(Long solrouteId, User user) {
+    Solroute solroute = getSolrouteOrThrow(solrouteId, user);
+
+    solroute.softDelete();
   }
 
   private Set<Long> getSolmarkedPlaceIds(User user, List<Place> places) {
