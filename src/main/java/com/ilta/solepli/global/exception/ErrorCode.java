@@ -21,6 +21,9 @@ public enum ErrorCode {
   INCORRECT_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호가 틀렸습니다."),
   INCORRECT_LOGIN_TYPE(HttpStatus.BAD_REQUEST, "올바르지 않은 로그인 타입입니다."),
 
+  // 접근 권환 관련 에러
+  ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
+
   // 유저 관련 에러
   USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자 정보가 존재하지 않습니다."),
   USER_EXISTS(HttpStatus.BAD_REQUEST, "이미 존재하는 계정입니다."),

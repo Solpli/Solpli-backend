@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import com.ilta.solepli.domain.auth.filter.JwtAuthenticationEntryPoint;
 import com.ilta.solepli.domain.auth.filter.JwtAuthenticationFilter;
 import com.ilta.solepli.domain.user.util.CustomUserDetailService;
+import com.ilta.solepli.global.exception.handler.JwtAccessDeniedHandler;
 import com.ilta.solepli.global.util.JwtUtil;
 
 @Configuration
@@ -30,6 +31,7 @@ public class SecurityConfig {
 
   private final JwtUtil jwtUtil;
   private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+  private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
   private final CustomUserDetailService customUserDetailService;
 
   @Bean
@@ -37,7 +39,10 @@ public class SecurityConfig {
     return http.csrf(csrf -> csrf.disable()) // JWT 기반 인증이라 CSRF 비활성화
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
+        .exceptionHandling(
+            ex ->
+                ex.authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                    .accessDeniedHandler(jwtAccessDeniedHandler))
         .authorizeHttpRequests(
             auth ->
                 auth.requestMatchers(
