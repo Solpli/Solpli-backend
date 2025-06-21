@@ -16,16 +16,18 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import lombok.RequiredArgsConstructor;
 
+import com.ilta.solepli.domain.auth.filter.JwtAuthenticationEntryPoint;
 import com.ilta.solepli.domain.auth.filter.JwtAuthenticationFilter;
-import com.ilta.solepli.domain.auth.service.JwtTokenProvider;
 import com.ilta.solepli.domain.user.util.CustomUserDetailService;
+import com.ilta.solepli.global.util.JwtUtil;
 
 @Configuration
 @RequiredArgsConstructor
 @EnableWebSecurity
 public class SecurityConfig {
 
-  private final JwtTokenProvider jwtTokenProvider;
+  private final JwtUtil jwtUtil;
+  private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
   private final CustomUserDetailService customUserDetailService;
 
   @Bean
@@ -33,6 +35,7 @@ public class SecurityConfig {
     return http.csrf(csrf -> csrf.disable()) // JWT 기반 인증이라 CSRF 비활성화
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
         .authorizeHttpRequests(
             auth ->
                 auth.requestMatchers(
@@ -71,7 +74,7 @@ public class SecurityConfig {
         // CORS 설정을 수동으로 추가
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .addFilterBefore(
-            new JwtAuthenticationFilter(jwtTokenProvider, customUserDetailService),
+            new JwtAuthenticationFilter(jwtUtil, customUserDetailService),
             UsernamePasswordAuthenticationFilter.class) // JWT 필터 추가
         .build();
   }
