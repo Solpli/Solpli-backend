@@ -5,6 +5,7 @@ import java.util.Arrays;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -23,6 +24,7 @@ import com.ilta.solepli.global.util.JwtUtil;
 
 @Configuration
 @RequiredArgsConstructor
+@EnableMethodSecurity // @PreAuthorize 사용 가능하게 함
 @EnableWebSecurity
 public class SecurityConfig {
 
